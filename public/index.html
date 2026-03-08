@@ -9,20 +9,47 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="logo">
-            <img src="./favicon.png" width="64" height="64">
-    </div>
+        <div class="logo">
+                <img src="./favicon.png" width="64" height="64">
+        </div>
+        
+        <div class="container_row">
+                <div class="title">WebRTC Robotics</div>
+        </div>
+        
+        <div class="container_row">
+                <button id="startButton" class="button" onclick="connect()">Connect</button>
+                <button id="stopButton" class="button" onclick="disconnect()" disabled>Disconnect</button>
+        </div>
+        
+        <div class="container">
 
-    <div class="container_row">
-            <div class="title">WebRTC Robotics</div>
-    </div>
+                <div class="column">
+                        <div class="cell border">
+                                <div id="right" class="button" disabled onclick="move('RIGHT')">RIGHT</div>
+                        </div>
+                        <div class="cell border">
+                                <div id="left" class="button" disabled onclick="move('LEFT')">LEFT</div>
+                        </div>
+                </div>
+        
+        
+                <div class="column">
+                        <div class="video"></div>
+                </div>
+        
+                <div class="column">
+                        <div class="cell border">
+                                <div id="move" class="button" disabled onclick="move('FORWARD')">MOVE</div>
+                        </div>
+                        <div class="cell border">
+                                <div id="back" class="button" disabled onclick="move('BACK')">BACK</div>
+                        </div>
+                </div>
 
-    <div class="container_row">
-            <button id="startButton" class="button" onclick="connect()">Connect</button>
-            <button id="stopButton" class="button" onclick="disconnect()" disabled>Disconnect</button>
-    </div>
-    
-    <div class="container" id="messages">
+        </div>
+
+    <div class="container_log" id="messages">
     </div>
 </body>
 </html>

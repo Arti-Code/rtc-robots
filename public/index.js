@@ -6,19 +6,27 @@ var username = "ARTUR";
 var target = "ROBOT";
 var remote_description;
 function disconnect() {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     dc.close();
     pc.close();
     socket.close();
     (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.removeAttribute("disabled");
     (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.setAttribute("disabled", "true");
+    (_c = document.getElementById("move")) === null || _c === void 0 ? void 0 : _c.setAttribute("disabled", "true");
+    (_d = document.getElementById("back")) === null || _d === void 0 ? void 0 : _d.setAttribute("disabled", "true");
+    (_e = document.getElementById("right")) === null || _e === void 0 ? void 0 : _e.setAttribute("disabled", "true");
+    (_f = document.getElementById("left")) === null || _f === void 0 ? void 0 : _f.setAttribute("disabled", "true");
     log("disconnected");
 }
 function connect() {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
     (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("disabled", "true");
     (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.removeAttribute("disabled");
+    (_c = document.getElementById("move")) === null || _c === void 0 ? void 0 : _c.removeAttribute("disabled");
+    (_d = document.getElementById("back")) === null || _d === void 0 ? void 0 : _d.removeAttribute("disabled");
+    (_e = document.getElementById("right")) === null || _e === void 0 ? void 0 : _e.removeAttribute("disabled");
+    (_f = document.getElementById("left")) === null || _f === void 0 ? void 0 : _f.removeAttribute("disabled");
     socket.onmessage = function (e) {
         var sdp = JSON.parse(e.data);
         var sd = sdp.SessionDescription.description;
@@ -151,5 +159,11 @@ function setRemoteDescription() {
     }
     else {
         log("remote description is not set");
+    }
+}
+function move(dir) {
+    if (dc.readyState == "open") {
+        log("<== " + dir);
+        dc.send(dir);
     }
 }

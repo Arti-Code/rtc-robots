@@ -1,11 +1,19 @@
 .container {
     display: flex;
-    flex-direction: column;
-    align-items: start;
-    justify-content: left;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     justify-self: center;
-    margin-left: 20%;
-    margin-right: 20%;
+    margin: auto;
+}
+
+.container_log {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    justify-self: center;
+    margin: auto;
 }
 
 .container_row {
@@ -15,6 +23,28 @@
     justify-content: space-around;
     justify-self: center;
     margin: auto;
+}
+
+.video {
+    width: 100%;
+    min-width: 420px;
+    min-height: 360px;
+    margin: 5px 5px;
+    background-color: black;
+}
+
+.border {
+    border-width: 4;
+    border-color: rgb(30, 71, 104);
+    border-style: solid;
+}
+
+.cell {
+    display: flex;
+    font-size: xx-large;
+    height: 100%;
+    margin-top: 25%;
+    margin-bottom: 25%;
 }
 
 .logo {
@@ -29,29 +59,44 @@
 .input {
     margin: 10px;
     padding: 10px;
-    font-size: 16px;
+    font-size: xx-large;
 }
 
 .button {
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
+    margin: 5px;
+    padding: 5px 5px;
+    font-size: xx-large;
     cursor: pointer;
 }
 
-.row {
-    display: flex;
-    flex-direction: row;
-    align-items: start;
-    justify-content: left;
+.ctrl_btn {
+    font-size:xx-large;
+    width: 100%;
+    height: 100%;
 }
 
 .title {
-    font-size: 36px;
+    font-size: xx-large;
     font-weight: bold;
     margin-bottom: 20px;
     margin-top: 20px;
     color: green;
     align-items: center;
     justify-self: center;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    column-height: inherit;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }

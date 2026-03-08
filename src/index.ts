@@ -13,6 +13,10 @@ function disconnect() {
     socket.close();
     document.getElementById("startButton")?.removeAttribute("disabled");
     document.getElementById("stopButton")?.setAttribute("disabled", "true");
+    document.getElementById("move")?.setAttribute("disabled", "true");
+    document.getElementById("back")?.setAttribute("disabled", "true");
+    document.getElementById("right")?.setAttribute("disabled", "true");
+    document.getElementById("left")?.setAttribute("disabled", "true");
     log("disconnected");
 }
 
@@ -20,6 +24,10 @@ function connect() {
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
     document.getElementById("startButton")?.setAttribute("disabled", "true");
     document.getElementById("stopButton")?.removeAttribute("disabled");
+    document.getElementById("move")?.removeAttribute("disabled");
+    document.getElementById("back")?.removeAttribute("disabled");
+    document.getElementById("right")?.removeAttribute("disabled");
+    document.getElementById("left")?.removeAttribute("disabled");
     socket.onmessage = (e) => {
         let sdp = JSON.parse(e.data);
         let sd = sdp.SessionDescription.description;
@@ -164,5 +172,12 @@ function setRemoteDescription() {
         }
     } else {
         log("remote description is not set");
+    }
+}
+
+function move(dir: string) {
+    if (dc.readyState == "open") {
+        log("<== " + dir);
+        dc.send(dir);
     }
 }
