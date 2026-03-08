@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "strict": true,
+        "outDir": "public",
+        "skipLibCheck": true
+    },
+    "include": ["**/*.ts", "**/*.html", "**/*.css"],
+    "exclude": ["dist", "node_modules", "public"]
+}

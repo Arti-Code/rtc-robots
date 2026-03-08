@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Robotics</title>
+    <script src="index.js"></script>
+    <link rel="icon" type="image/x-icon" href="./favicon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="logo">
+            <img src="./favicon.png" width="64" height="64">
+    </div>
+
+    <div class="container_row">
+            <div class="title">WebRTC Robotics</div>
+    </div>
+
+    <div class="container_row">
+            <button id="startButton" class="button" onclick="connect()">Connect</button>
+            <button id="stopButton" class="button" onclick="disconnect()" disabled>Disconnect</button>
+    </div>
+    
+    <div class="container" id="messages">
+    </div>
+</body>
+</html>
