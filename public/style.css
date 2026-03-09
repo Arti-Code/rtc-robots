@@ -1,3 +1,4 @@
+
 .container {
     display: flex;
     flex-direction: row;
@@ -31,11 +32,14 @@
     min-height: 360px;
     margin: 5px 5px;
     background-color: black;
+    border-width: 12;
+    border-color: slateblue;
+    border-style: solid;
 }
 
 .border {
-    border-width: 4;
-    border-color: rgb(30, 71, 104);
+    border-width: 12;
+    border-color: slategrey;
     border-style: solid;
 }
 
@@ -67,6 +71,7 @@
     padding: 5px 5px;
     font-size: xx-large;
     cursor: pointer;
+    border-radius: 8;
 }
 
 .ctrl_btn {
