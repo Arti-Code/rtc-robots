@@ -193,7 +193,8 @@ function log(msg: any) {
     console.log(msg);
     if (logArea) {
         let a = document.createElement("a");
-        logArea.appendChild(a);
+        logArea.insertBefore(a, logArea.firstElementChild);
+        //logArea.appendChild(a);
         a.classList.add("row")
         a.textContent = msg;
         //logArea.innerHTML += "<a class='row'>" + msg + "</a>";
@@ -202,8 +203,10 @@ function log(msg: any) {
         console.log("log area is not found");
         //console.log(logArea);
     }
-    if (node_num > 10) {
-        logArea.children[0].remove();
+    if (node_num >= 10) {
+        for (let i = 10; i < node_num; i++) {
+            logArea.children[i].remove();
+        }
     }
 }
 
