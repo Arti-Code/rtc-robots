@@ -49,6 +49,8 @@
     height: 100%;
     margin-top: 25%;
     margin-bottom: 25%;
+    margin-left: 4px;
+    margin-right: 4px;
 }
 
 .logo {
@@ -71,7 +73,22 @@
     padding: 5px 5px;
     font-size: xx-large;
     cursor: pointer;
-    border-radius: 8;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 4px;
+    border-color: slateblue;
+}
+
+.btn_connect {
+    color: green;
+}
+
+.btn_disconnect {
+    color: orange;
+}
+
+.control_div {
+    color: black;
 }
 
 .ctrl_btn {

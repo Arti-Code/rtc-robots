@@ -20,36 +20,48 @@ function disconnect() {
     log("disconnected");
 }
 
-function connect() {
+function tryConnect() {
+    let user_input = document.getElementById("userName") as HTMLInputElement;
+    let target_input = document.getElementById("targetName") as HTMLInputElement;
+    username = user_input.value;
+    target = target_input.value;
+    if (username.length > 0 && target.length > 0) {
+        document.getElementById("startButton")?.setAttribute("disabled", "true");
+        document.getElementById("stopButton")?.removeAttribute("disabled");
+        document.getElementById("move")?.removeAttribute("disabled");
+        document.getElementById("back")?.removeAttribute("disabled");
+        document.getElementById("right")?.removeAttribute("disabled");
+        document.getElementById("left")?.removeAttribute("disabled");
+        connect_socket();
+    }
+}
+
+function connect_socket() {
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
-    document.getElementById("startButton")?.setAttribute("disabled", "true");
-    document.getElementById("stopButton")?.removeAttribute("disabled");
-    document.getElementById("move")?.removeAttribute("disabled");
-    document.getElementById("back")?.removeAttribute("disabled");
-    document.getElementById("right")?.removeAttribute("disabled");
-    document.getElementById("left")?.removeAttribute("disabled");
+
     socket.onmessage = (e) => {
         let sdp = JSON.parse(e.data);
         let sd = sdp.SessionDescription.description;
         if (sd) {
             remote_description = JSON.parse(sd);
             if (remote_description) {
-                log("remote description received");
-                log(remote_description);
+                //log("remote description received");
+                //log(remote_description);
                 setRemoteDescription();
             } else {
                 log("remote description is null");
             }
         } else {
-          log("description is null");
+            log("description is null");
         }
     }
 
     socket.onopen = () => {
-        log("socket connected");
+        log("websocket connected");
         register_peer(username);
         pc = create_pc();
         dc = create_data_channel();
+
         pc.oniceconnectionstatechange = () => {
             log(pc.iceConnectionState);
         };
@@ -66,7 +78,7 @@ function connect() {
                         "kind": "Offer"
                     }
                 };
-                log(data);
+                //log(data);
                 socket.send(JSON.stringify(data));
             }
         }
@@ -93,7 +105,7 @@ function create_pc(): RTCPeerConnection {
                 ]
             },
             {
-                urls: [
+                "urls": [
                     "stun:stun.l.google.com:19302"
                 ]
             }, 
@@ -111,14 +123,14 @@ function create_pc(): RTCPeerConnection {
             }
         ]
     });
-    log("peer connection created");
+    //log("peer connection created");
 
     pc.oniceconnectionstatechange = (e) => {
         log(pc.iceConnectionState);
     };
 
     pc.onicecandidate = (e) => {
-        log("onicecandidate");
+        //log("onicecandidate");
         if (e.candidate === null) {
             let sdp = JSON.stringify(pc.localDescription);
             let data = {
@@ -130,15 +142,15 @@ function create_pc(): RTCPeerConnection {
                     "kind": "Offer"
                 }
             };
-            log("sending offer");
-            log(data);
-            log(data.SessionDescription.description);
+            //log("sending offer");
+            //log(data);
+            //log(data.SessionDescription.description);
             socket.send(JSON.stringify(data));
         }
     };
 
     pc.onnegotiationneeded = (e) => {
-        log("onnegotiationneeded");
+        //log("onnegotiationneeded");
         pc.createOffer().then((d) => {
             pc.setLocalDescription(d);
         }).catch(log);
@@ -148,7 +160,7 @@ function create_pc(): RTCPeerConnection {
 
 function create_data_channel(): RTCDataChannel {
     let dc = pc.createDataChannel('dataChannel');
-    log("data channel created");
+    log("datachannel created");
 
     dc.onclose = (e) => {
         log('datachannel closed');
@@ -156,31 +168,42 @@ function create_data_channel(): RTCDataChannel {
 
     dc.onopen = (e) => {
         log('datachannel opened');
+        let interval = Math.round(Math.random() * 10000);
         window.setInterval(() => {
             if (dc.readyState === "open") {
-                let num = Math.round(Math.random() * 1000000);
+                let num = Math.round(Math.random() * 1000000000);
+                interval = Math.round(Math.random() * 10000);
                 log("<== " + num);
-                dc.send("random number: " + num);
+                dc.send("" + num);
             }
-        }, 6000);
+        }, interval);
     }
 
     dc.onmessage = (e) => {
         let s: string = e.data.toString();
         log("==> " + s);
     }
+
     return dc;
 }
 
 function log(msg: any) {
-    let logArea = document.getElementById("messages");
+    let logArea = document.getElementById("messages") as HTMLDivElement;
+    let node_num = logArea.childElementCount;
     console.log(msg);
     if (logArea) {
-        logArea.innerHTML += "<a class='row'>" + msg + "</a>";
+        let a = document.createElement("a");
+        logArea.appendChild(a);
+        a.classList.add("row")
+        a.textContent = msg;
+        //logArea.innerHTML += "<a class='row'>" + msg + "</a>";
         //logArea.innerText += msg + "\n";
     } else {
         console.log("log area is not found");
-        console.log(logArea);
+        //console.log(logArea);
+    }
+    if (node_num > 10) {
+        logArea.children[0].remove();
     }
 }
 
