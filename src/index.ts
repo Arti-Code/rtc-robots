@@ -6,6 +6,9 @@ let socket: WebSocket;
 let username: string = "ARTUR";
 let target: string = "ROBOT";
 let remote_description: RTCSessionDescription;
+let input_box = document.getElementById("inputBox") as HTMLDivElement;
+//let user_input = document.getElementById("userName") as HTMLInputElement;
+//let target_input = document.getElementById("targetName") as HTMLInputElement;
 
 function disconnect() {
     dc.close();
@@ -17,6 +20,11 @@ function disconnect() {
     document.getElementById("back")?.setAttribute("disabled", "true");
     document.getElementById("right")?.setAttribute("disabled", "true");
     document.getElementById("left")?.setAttribute("disabled", "true");
+    //input_box.hidden = false;
+    let user_input = document.getElementById("userName") as HTMLInputElement;
+    let target_input = document.getElementById("targetName") as HTMLInputElement;
+    user_input.removeAttribute("hidden");
+    target_input.removeAttribute("hidden");
     log("disconnected");
 }
 
@@ -28,6 +36,9 @@ function tryConnect() {
     if (username.length > 0 && target.length > 0) {
         document.getElementById("startButton")?.setAttribute("disabled", "true");
         document.getElementById("stopButton")?.removeAttribute("disabled");
+        //input_box.hidden = true;
+        user_input.setAttribute("hidden", "true");
+        target_input.setAttribute("hidden", "true");
         document.getElementById("move")?.removeAttribute("disabled");
         document.getElementById("back")?.removeAttribute("disabled");
         document.getElementById("right")?.removeAttribute("disabled");
@@ -203,8 +214,8 @@ function log(msg: any) {
         console.log("log area is not found");
         //console.log(logArea);
     }
-    if (node_num >= 10) {
-        for (let i = 10; i < node_num; i++) {
+    if (node_num >= 6) {
+        for (let i = 6; i < node_num; i++) {
             logArea.children[i].remove();
         }
     }

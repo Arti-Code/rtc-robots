@@ -5,6 +5,9 @@ var socket;
 var username = "ARTUR";
 var target = "ROBOT";
 var remote_description;
+var input_box = document.getElementById("inputBox");
+//let user_input = document.getElementById("userName") as HTMLInputElement;
+//let target_input = document.getElementById("targetName") as HTMLInputElement;
 function disconnect() {
     var _a, _b, _c, _d, _e, _f;
     dc.close();
@@ -16,6 +19,11 @@ function disconnect() {
     (_d = document.getElementById("back")) === null || _d === void 0 ? void 0 : _d.setAttribute("disabled", "true");
     (_e = document.getElementById("right")) === null || _e === void 0 ? void 0 : _e.setAttribute("disabled", "true");
     (_f = document.getElementById("left")) === null || _f === void 0 ? void 0 : _f.setAttribute("disabled", "true");
+    //input_box.hidden = false;
+    var user_input = document.getElementById("userName");
+    var target_input = document.getElementById("targetName");
+    user_input.removeAttribute("hidden");
+    target_input.removeAttribute("hidden");
     log("disconnected");
 }
 function tryConnect() {
@@ -27,6 +35,9 @@ function tryConnect() {
     if (username.length > 0 && target.length > 0) {
         (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("disabled", "true");
         (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.removeAttribute("disabled");
+        //input_box.hidden = true;
+        user_input.setAttribute("hidden", "true");
+        target_input.setAttribute("hidden", "true");
         (_c = document.getElementById("move")) === null || _c === void 0 ? void 0 : _c.removeAttribute("disabled");
         (_d = document.getElementById("back")) === null || _d === void 0 ? void 0 : _d.removeAttribute("disabled");
         (_e = document.getElementById("right")) === null || _e === void 0 ? void 0 : _e.removeAttribute("disabled");
@@ -186,8 +197,8 @@ function log(msg) {
         console.log("log area is not found");
         //console.log(logArea);
     }
-    if (node_num >= 10) {
-        for (var i = 10; i < node_num; i++) {
+    if (node_num >= 6) {
+        for (var i = 6; i < node_num; i++) {
             logArea.children[i].remove();
         }
     }

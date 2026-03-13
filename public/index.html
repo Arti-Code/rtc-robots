@@ -12,26 +12,29 @@
         <div class="logo">
                 <img src="./title.png" height="96">
         </div>
-        <div class="container">
 
+        <div class="container" id="inputBox">
                 <div class="container_row">
-                        <input id="userName" value="ARTUR"></div>
-                        <input id="targetName" value="ROBOT"></div>
+                        <input id="userName" value="ARTUR">
+                        <input id="targetName" value="ROBOT">
                 </div>
+        </div>
+
+        <div class="container">
                 <div class="container_row">
-                        <button id="startButton" class="button" onclick="tryConnect()">Connect</button>
-                        <button id="stopButton" class="button" onclick="disconnect()" disabled>Disconnect</button>
+                        <button id="startButton" class="button btn_connect" onclick="tryConnect()">Connect</button>
+                        <button id="stopButton" class="button btn_disconnect" onclick="disconnect()" disabled>Disconnect</button>
                 </div>
         </div>
         
         <div class="container">
 
                 <div class="column">
-                        <div class="cell border control_div" onclick="move('RIGHT')">
+                        <div class="cell" onclick="move('RIGHT')">
                                 <img src="./arrow_right.png" width="72">
                                 <!-- <div id="right" class="button control_div" disabled onclick="move('RIGHT')">RIGHT</div> -->
                         </div>
-                        <div class="cell border control_div" onclick="move('LEFT')">
+                        <div class="cell" onclick="move('LEFT')">
                                 <img src="./arrow_left.png" width="72">
                                 <!-- <div id="left" class="button control_div" disabled onclick="move('LEFT')">LEFT</div> -->
                         </div>
@@ -43,11 +46,11 @@
                 </div>
         
                 <div class="column">
-                        <div class="cell border control_div" onclick="move('MOVE')">
+                        <div class="cell" onclick="move('MOVE')">
                                 <img src="./arrow_move.png" width="72">
                                 <!-- <div id="move" class="button control_div" disabled onclick="move('FORWARD')">MOVE</div> -->
                         </div>
-                        <div class="cell border control_div" onclick="move('BACK')">
+                        <div class="cell" onclick="move('BACK')">
                                 <img src="./arrow_back.png" width="72">
                                 <!-- <div id="back" class="button control_div" disabled onclick="move('BACK')">BACK</div> -->
                         </div>
