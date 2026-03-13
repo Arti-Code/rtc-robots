@@ -14,8 +14,8 @@ function disconnect() {
     dc.close();
     pc.close();
     socket.close();
-    document.getElementById("startButton")?.removeAttribute("disabled");
-    document.getElementById("stopButton")?.setAttribute("disabled", "true");
+    document.getElementById("startButton")?.removeAttribute("hidden");
+    document.getElementById("stopButton")?.setAttribute("hidden", "true");
     document.getElementById("move")?.setAttribute("disabled", "true");
     document.getElementById("back")?.setAttribute("disabled", "true");
     document.getElementById("right")?.setAttribute("disabled", "true");
@@ -34,8 +34,8 @@ function tryConnect() {
     username = user_input.value;
     target = target_input.value;
     if (username.length > 0 && target.length > 0) {
-        document.getElementById("startButton")?.setAttribute("disabled", "true");
-        document.getElementById("stopButton")?.removeAttribute("disabled");
+        document.getElementById("startButton")?.setAttribute("hidden", "true");
+        document.getElementById("stopButton")?.removeAttribute("hidden");
         //input_box.hidden = true;
         user_input.setAttribute("hidden", "true");
         target_input.setAttribute("hidden", "true");

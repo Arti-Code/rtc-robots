@@ -13,8 +13,8 @@ function disconnect() {
     dc.close();
     pc.close();
     socket.close();
-    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.removeAttribute("disabled");
-    (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.setAttribute("disabled", "true");
+    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.removeAttribute("hidden");
+    (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.setAttribute("hidden", "true");
     (_c = document.getElementById("move")) === null || _c === void 0 ? void 0 : _c.setAttribute("disabled", "true");
     (_d = document.getElementById("back")) === null || _d === void 0 ? void 0 : _d.setAttribute("disabled", "true");
     (_e = document.getElementById("right")) === null || _e === void 0 ? void 0 : _e.setAttribute("disabled", "true");
@@ -33,8 +33,8 @@ function tryConnect() {
     username = user_input.value;
     target = target_input.value;
     if (username.length > 0 && target.length > 0) {
-        (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("disabled", "true");
-        (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.removeAttribute("disabled");
+        (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("hidden", "true");
+        (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.removeAttribute("hidden");
         //input_box.hidden = true;
         user_input.setAttribute("hidden", "true");
         target_input.setAttribute("hidden", "true");
