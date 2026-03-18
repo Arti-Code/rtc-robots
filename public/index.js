@@ -6,46 +6,70 @@ var username = "ARTUR";
 var target = "ROBOT";
 var remote_description;
 var input_box = document.getElementById("inputBox");
-//let user_input = document.getElementById("userName") as HTMLInputElement;
-//let target_input = document.getElementById("targetName") as HTMLInputElement;
+//let camera_button = document.getElementById("cameraButton") as HTMLButtonElement;
+//var user_input = document.getElementById("userName") as HTMLInputElement;
+//var target_input = document.getElementById("targetName") as HTMLInputElement;
+/* document.onload = (e) => {
+    console.log("open page");
+} */
 function disconnect() {
-    var _a, _b, _c, _d, _e, _f;
-    dc.close();
+    if (dc) {
+        dc.close();
+    }
     pc.close();
     socket.close();
-    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.removeAttribute("hidden");
-    (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.setAttribute("hidden", "true");
-    (_c = document.getElementById("move")) === null || _c === void 0 ? void 0 : _c.setAttribute("disabled", "true");
-    (_d = document.getElementById("back")) === null || _d === void 0 ? void 0 : _d.setAttribute("disabled", "true");
-    (_e = document.getElementById("right")) === null || _e === void 0 ? void 0 : _e.setAttribute("disabled", "true");
-    (_f = document.getElementById("left")) === null || _f === void 0 ? void 0 : _f.setAttribute("disabled", "true");
-    //input_box.hidden = false;
-    var user_input = document.getElementById("userName");
-    var target_input = document.getElementById("targetName");
-    user_input.removeAttribute("hidden");
-    target_input.removeAttribute("hidden");
+    show_connection_buttons();
     log("disconnected");
 }
 function tryConnect() {
-    var _a, _b, _c, _d, _e, _f;
     var user_input = document.getElementById("userName");
     var target_input = document.getElementById("targetName");
     username = user_input.value;
     target = target_input.value;
     if (username.length > 0 && target.length > 0) {
-        (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("hidden", "true");
-        (_b = document.getElementById("stopButton")) === null || _b === void 0 ? void 0 : _b.removeAttribute("hidden");
-        //input_box.hidden = true;
-        user_input.setAttribute("hidden", "true");
-        target_input.setAttribute("hidden", "true");
-        (_c = document.getElementById("move")) === null || _c === void 0 ? void 0 : _c.removeAttribute("disabled");
-        (_d = document.getElementById("back")) === null || _d === void 0 ? void 0 : _d.removeAttribute("disabled");
-        (_e = document.getElementById("right")) === null || _e === void 0 ? void 0 : _e.removeAttribute("disabled");
-        (_f = document.getElementById("left")) === null || _f === void 0 ? void 0 : _f.removeAttribute("disabled");
-        connect_socket();
+        connect_socket(false);
+        hide_connection_buttons();
     }
 }
-function connect_socket() {
+function tryConnectCamera() {
+    var user_input = document.getElementById("userName");
+    var target_input = document.getElementById("targetName");
+    username = user_input.value;
+    target = target_input.value;
+    if (username.length > 0 && target.length > 0) {
+        connect_socket(true);
+        hide_connection_buttons();
+    }
+}
+function show_connection_buttons() {
+    var _a, _b, _c, _d, _e;
+    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.removeAttribute("hidden");
+    (_b = document.getElementById("cameraButton")) === null || _b === void 0 ? void 0 : _b.removeAttribute("hidden");
+    (_c = document.getElementById("stopButton")) === null || _c === void 0 ? void 0 : _c.setAttribute("hidden", "true");
+    //document.getElementById("move")?.setAttribute("disabled", "true");
+    //document.getElementById("back")?.setAttribute("disabled", "true");
+    //document.getElementById("right")?.setAttribute("disabled", "true");
+    //document.getElementById("left")?.setAttribute("disabled", "true");
+    //let user_input = document.getElementById("userName") as HTMLInputElement;
+    //let target_input = document.getElementById("targetName") as HTMLInputElement;
+    (_d = document.getElementById("userName")) === null || _d === void 0 ? void 0 : _d.removeAttribute("hidden");
+    (_e = document.getElementById("targetName")) === null || _e === void 0 ? void 0 : _e.removeAttribute("hidden");
+}
+function hide_connection_buttons() {
+    var _a, _b, _c, _d, _e;
+    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("hidden", "true");
+    (_b = document.getElementById("cameraButton")) === null || _b === void 0 ? void 0 : _b.setAttribute("hidden", "true");
+    (_c = document.getElementById("stopButton")) === null || _c === void 0 ? void 0 : _c.removeAttribute("hidden");
+    (_d = document.getElementById("userName")) === null || _d === void 0 ? void 0 : _d.setAttribute("hidden", "true");
+    (_e = document.getElementById("targetName")) === null || _e === void 0 ? void 0 : _e.setAttribute("hidden", "true");
+    //user_input.setAttribute("hidden", "true");
+    //target_input.removeAttribute("hidden");
+    //document.getElementById("move")?.removeAttribute("disabled");
+    //document.getElementById("back")?.removeAttribute("disabled");
+    //document.getElementById("right")?.removeAttribute("disabled");
+    //document.getElementById("left")?.removeAttribute("disabled");
+}
+function connect_socket(camera) {
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
     socket.onmessage = function (e) {
         var sdp = JSON.parse(e.data);
@@ -53,8 +77,6 @@ function connect_socket() {
         if (sd) {
             remote_description = JSON.parse(sd);
             if (remote_description) {
-                //log("remote description received");
-                //log(remote_description);
                 setRemoteDescription();
             }
             else {
@@ -68,8 +90,7 @@ function connect_socket() {
     socket.onopen = function () {
         log("websocket connected");
         register_peer(username);
-        pc = create_pc();
-        dc = create_data_channel();
+        pc = create_pc(camera);
         pc.oniceconnectionstatechange = function () {
             log(pc.iceConnectionState);
         };
@@ -84,7 +105,6 @@ function connect_socket() {
                         "kind": "Offer"
                     }
                 };
-                //log(data);
                 socket.send(JSON.stringify(data));
             }
         };
@@ -99,7 +119,7 @@ function register_peer(name) {
     var registerMsg = { "Register": name };
     socket.send(JSON.stringify(registerMsg));
 }
-function create_pc() {
+function create_pc(camera) {
     var pc = new RTCPeerConnection({
         "iceServers": [
             {
@@ -126,12 +146,18 @@ function create_pc() {
             }
         ]
     });
-    //log("peer connection created");
+    if (camera) {
+        //pc.addTransceiver('audio', {'direction': 'recvonly'})
+        pc.addTransceiver('video', { 'direction': 'recvonly' });
+        //pc.addTransceiver('video', {'direction': 'recvonly'})
+    }
+    else {
+        dc = create_data_channel(pc);
+    }
     pc.oniceconnectionstatechange = function (e) {
         log(pc.iceConnectionState);
     };
     pc.onicecandidate = function (e) {
-        //log("onicecandidate");
         if (e.candidate === null) {
             var sdp = JSON.stringify(pc.localDescription);
             var data = {
@@ -142,21 +168,56 @@ function create_pc() {
                     "kind": "Offer"
                 }
             };
-            //log("sending offer");
-            //log(data);
-            //log(data.SessionDescription.description);
             socket.send(JSON.stringify(data));
         }
     };
+    pc.ontrack = function (e) {
+        e.currentTarget;
+        log("onTrack");
+        console.log(e);
+        console.log("type: " + e.type);
+        console.log("track num: " + e.streams.length);
+        console.log("track kind: " + e.track.kind);
+        var el = document.getElementById("remoteVideos");
+        el.srcObject = e.streams[0];
+        el.autoplay = true;
+        el.controls = true;
+        //document.getElementById('remoteVideos')?.appendChild(el);
+    };
+    /* pc.ondatachannel = function (e) {
+        log("on datachannel");
+        dc = e.channel;
+    
+        dc.onclose = (e) => {
+            log('datachannel closed');
+        }
+
+        dc.onopen = (e) => {
+            log('datachannel opened');
+            let interval = Math.round(Math.random() * 10000);
+            window.setInterval(() => {
+                if (dc.readyState === "open") {
+                    let num = Math.round(Math.random() * 1000000000);
+                    interval = Math.round(Math.random() * 10000);
+                    log("<== " + num);
+                    dc.send("" + num);
+                }
+            }, interval);
+        }
+
+        dc.onmessage = (e) => {
+            let s: string = e.data.toString();
+            log("==> " + s);
+        }
+    } */
     pc.onnegotiationneeded = function (e) {
-        //log("onnegotiationneeded");
         pc.createOffer().then(function (d) {
             pc.setLocalDescription(d);
         }).catch(log);
     };
     return pc;
 }
-function create_data_channel() {
+function create_data_channel(pc) {
     var dc = pc.createDataChannel('dataChannel');
     log("datachannel created");
     dc.onclose = function (e) {
@@ -187,15 +248,11 @@ function log(msg) {
     if (logArea) {
         var a = document.createElement("a");
         logArea.insertBefore(a, logArea.firstElementChild);
-        //logArea.appendChild(a);
         a.classList.add("row");
         a.textContent = msg;
-        //logArea.innerHTML += "<a class='row'>" + msg + "</a>";
-        //logArea.innerText += msg + "\n";
     }
     else {
         console.log("log area is not found");
-        //console.log(logArea);
     }
     if (node_num >= 6) {
         for (var i = 6; i < node_num; i++) {

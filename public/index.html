@@ -15,14 +15,15 @@
 
         <div class="container" id="inputBox">
                 <div class="container_row">
-                        <input id="userName" value="ARTUR">
-                        <input id="targetName" value="ROBOT">
+                        <input type="text" id="userName" value="ARTUR">
+                        <input type="text" id="targetName" value="ROBOT">
                 </div>
         </div>
 
         <div class="container">
                 <div class="container_row">
                         <button id="startButton" class="button btn_connect" onclick="tryConnect()">Connect</button>
+                        <button id="cameraButton" class="button btn_connect" onclick="tryConnectCamera()">Camera</button>
                         <button id="stopButton" class="button btn_disconnect" onclick="disconnect()" hidden>Disconnect</button>
                 </div>
         </div>
@@ -42,7 +43,8 @@
         
         
                 <div class="column">
-                        <div class="video"></div>
+                        <video id="remoteVideos" class="video"></video>
+                        <!-- <div class="video"></div> -->
                 </div>
         
                 <div class="column">

@@ -31,10 +31,10 @@
     min-width: 420px;
     min-height: 360px;
     margin: 5px 5px;
-    background-color: black;
     border-width: 12;
     border-color: slateblue;
     border-style: solid;
+    margin: 4px 4px;
 }
 
 .cell {
