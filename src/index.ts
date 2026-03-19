@@ -7,13 +7,6 @@ let username: string = "ARTUR";
 let target: string = "ROBOT";
 let remote_description: RTCSessionDescription;
 let input_box = document.getElementById("inputBox") as HTMLDivElement;
-//let camera_button = document.getElementById("cameraButton") as HTMLButtonElement;
-//var user_input = document.getElementById("userName") as HTMLInputElement;
-//var target_input = document.getElementById("targetName") as HTMLInputElement;
-
-/* document.onload = (e) => {
-    console.log("open page");
-} */
 
 function disconnect() {
     if (dc) { dc.close(); }
@@ -49,12 +42,6 @@ function show_connection_buttons() {
     document.getElementById("startButton")?.removeAttribute("hidden");
     document.getElementById("cameraButton")?.removeAttribute("hidden");
     document.getElementById("stopButton")?.setAttribute("hidden", "true");
-    //document.getElementById("move")?.setAttribute("disabled", "true");
-    //document.getElementById("back")?.setAttribute("disabled", "true");
-    //document.getElementById("right")?.setAttribute("disabled", "true");
-    //document.getElementById("left")?.setAttribute("disabled", "true");
-    //let user_input = document.getElementById("userName") as HTMLInputElement;
-    //let target_input = document.getElementById("targetName") as HTMLInputElement;
     document.getElementById("userName")?.removeAttribute("hidden");
     document.getElementById("targetName")?.removeAttribute("hidden");
 }
@@ -65,12 +52,6 @@ function hide_connection_buttons() {
     document.getElementById("stopButton")?.removeAttribute("hidden");
     document.getElementById("userName")?.setAttribute("hidden", "true");
     document.getElementById("targetName")?.setAttribute("hidden", "true");
-    //user_input.setAttribute("hidden", "true");
-    //target_input.removeAttribute("hidden");
-    //document.getElementById("move")?.removeAttribute("disabled");
-    //document.getElementById("back")?.removeAttribute("disabled");
-    //document.getElementById("right")?.removeAttribute("disabled");
-    //document.getElementById("left")?.removeAttribute("disabled");
 }
 
 function connect_socket(camera: boolean) {
@@ -157,9 +138,7 @@ function create_pc(camera: boolean): RTCPeerConnection {
         ]
     });
     if (camera) {
-        //pc.addTransceiver('audio', {'direction': 'recvonly'})
         pc.addTransceiver('video', {'direction': 'recvonly'})
-        //pc.addTransceiver('video', {'direction': 'recvonly'})
     } else {
         dc = create_data_channel(pc);
     }
@@ -195,35 +174,7 @@ function create_pc(camera: boolean): RTCPeerConnection {
         el.srcObject = e.streams[0];
         el.autoplay = true;
         el.controls = true;
-        //document.getElementById('remoteVideos')?.appendChild(el);
     }
-
-    /* pc.ondatachannel = function (e) {
-        log("on datachannel");
-        dc = e.channel;
-    
-        dc.onclose = (e) => {
-            log('datachannel closed');
-        }
-
-        dc.onopen = (e) => {
-            log('datachannel opened');
-            let interval = Math.round(Math.random() * 10000);
-            window.setInterval(() => {
-                if (dc.readyState === "open") {
-                    let num = Math.round(Math.random() * 1000000000);
-                    interval = Math.round(Math.random() * 10000);
-                    log("<== " + num);
-                    dc.send("" + num);
-                }
-            }, interval);
-        }
-
-        dc.onmessage = (e) => {
-            let s: string = e.data.toString();
-            log("==> " + s);
-        }
-    } */
 
     pc.onnegotiationneeded = (e) => {
         pc.createOffer().then((d) => {
