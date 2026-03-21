@@ -178,6 +178,33 @@ function create_pc(camera: boolean): RTCPeerConnection {
         dc = create_data_channel(pc);
     }
 
+    pc.ondatachannel = (e) => {
+        dc = e.channel;
+        log("datachannel created");
+
+        dc.onclose = (e) => {
+            log('datachannel closed');
+        }
+
+        dc.onopen = (e) => {
+            log('datachannel is open');
+            //let interval = Math.round(Math.random() * 10000);
+            //window.setInterval(() => {
+            //    if (dc.readyState === "open") {
+            //        let num = Math.round(Math.random() * 1000000000);
+            //        interval = Math.round(Math.random() * 10000);
+            //        log("<== " + num);
+            //        dc.send("" + num);
+            //    }
+            //}, interval);
+        }
+
+        dc.onmessage = (e) => {
+            let s: string = e.data.toString();
+            log("==> " + s);
+        }
+    };
+
     pc.oniceconnectionstatechange = (e) => {
         log(pc.iceConnectionState);
     };

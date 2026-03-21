@@ -170,6 +170,29 @@ function create_pc(camera) {
     else {
         dc = create_data_channel(pc);
     }
+    pc.ondatachannel = function (e) {
+        dc = e.channel;
+        log("datachannel created");
+        dc.onclose = function (e) {
+            log('datachannel closed');
+        };
+        dc.onopen = function (e) {
+            log('datachannel is open');
+            //let interval = Math.round(Math.random() * 10000);
+            //window.setInterval(() => {
+            //    if (dc.readyState === "open") {
+            //        let num = Math.round(Math.random() * 1000000000);
+            //        interval = Math.round(Math.random() * 10000);
+            //        log("<== " + num);
+            //        dc.send("" + num);
+            //    }
+            //}, interval);
+        };
+        dc.onmessage = function (e) {
+            var s = e.data.toString();
+            log("==> " + s);
+        };
+    };
     pc.oniceconnectionstatechange = function (e) {
         log(pc.iceConnectionState);
     };
