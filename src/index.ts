@@ -1,3 +1,5 @@
+//import {log} from "./util.js"; 
+//import {iceServers} from "./iceservers.js";
 
 
 let pc: RTCPeerConnection;
@@ -7,6 +9,64 @@ let username: string = "ARTUR";
 let target: string = "ROBOT";
 let remote_description: RTCSessionDescription;
 let input_box = document.getElementById("inputBox") as HTMLDivElement;
+//let move_btn = document.getElementById("moveButton") as HTMLDivElement;
+
+/* move_btn.ontouchend = (e) => {
+    move("STOP");
+}
+
+move_btn.ontouchstart = (e) => {
+    move("MOVE");
+} */
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("init loader");
+    const move_button = document.getElementById('moveButton');
+    if (move_button) {
+        move_button.ontouchend = function(event) {
+            move("STOP");
+        };
+        move_button.ontouchstart = function(event) {
+            move("MOVE");
+        };
+    } else {
+        console.error("Element with ID 'moveButton' not found.");
+    }
+    const back_button = document.getElementById('backButton');
+    if (back_button) {
+        back_button.ontouchend = function(event) {
+            move("STOP");
+        };
+        back_button.ontouchstart = function(event) {
+            move("BACK");
+        };
+    } else {
+        console.error("Element with ID 'backButton' not found.");
+    }
+    const right_button = document.getElementById('rightButton');
+    if (right_button) {
+        right_button.ontouchend = function(event) {
+            move("STOP");
+        };
+        right_button.ontouchstart = function(event) {
+            move("RIGHT");
+        };
+    } else {
+        console.error("Element with ID 'rightButton' not found.");
+    }
+    const left_button = document.getElementById('leftButton');
+    if (left_button) {
+        left_button.ontouchend = function(event) {
+            move("STOP");
+        };
+        left_button.ontouchstart = function(event) {
+            move("LEFT");
+        };
+    } else {
+        console.error("Element with ID 'leftButton' not found.");
+    }
+});
+   
 
 function disconnect() {
     if (dc) { dc.close(); }
@@ -111,32 +171,7 @@ function register_peer(name: string) {
 }
 
 function create_pc(camera: boolean): RTCPeerConnection {
-    let pc = new RTCPeerConnection({
-        "iceServers": [
-            { 
-                "urls": [
-                    "stun:fr-turn8.xirsys.com",
-                ]
-            },
-            {
-                "urls": [
-                    "stun:stun.l.google.com:19302"
-                ]
-            }, 
-            {
-                "username": "xrlEivlkdTCQvwPYbCRHDur872L9CNM7DlbAya3tEhbBcn7zMgFFN8q43pP_2v-4AAAAAGmxwT1nd296ZHlr",
-                "credential": "d05d03e4-1d7f-11f1-b1bb-be96737d4d7e",
-                "urls": [
-                    "turn:fr-turn8.xirsys.com:80?transport=udp",
-                    "turn:fr-turn8.xirsys.com:3478?transport=udp",
-                    "turn:fr-turn8.xirsys.com:80?transport=tcp",
-                    "turn:fr-turn8.xirsys.com:3478?transport=tcp", 
-                    "turns:fr-turn8.xirsys.com:443?transport=tcp",
-                    "turns:fr-turn8.xirsys.com:5349?transport=tcp"
-                ]
-            }
-        ]
-    });
+    let pc = new RTCPeerConnection(iceServers);
     if (camera) {
         pc.addTransceiver('video', {'direction': 'recvonly'})
     } else {
@@ -165,11 +200,7 @@ function create_pc(camera: boolean): RTCPeerConnection {
 
     pc.ontrack = function (e) {
         e.currentTarget
-        log("onTrack");
-        console.log(e);
-        console.log("type: " + e.type);
-        console.log("track num: " + e.streams.length);
-        console.log("track kind: " + e.track.kind);
+        log("track received");
         let el = document.getElementById("remoteVideos") as HTMLVideoElement;
         el.srcObject = e.streams[0];
         el.autoplay = true;
@@ -193,16 +224,16 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
     }
 
     dc.onopen = (e) => {
-        log('datachannel opened');
-        let interval = Math.round(Math.random() * 10000);
-        window.setInterval(() => {
-            if (dc.readyState === "open") {
-                let num = Math.round(Math.random() * 1000000000);
-                interval = Math.round(Math.random() * 10000);
-                log("<== " + num);
-                dc.send("" + num);
-            }
-        }, interval);
+        log('datachannel is open');
+        //let interval = Math.round(Math.random() * 10000);
+        //window.setInterval(() => {
+        //    if (dc.readyState === "open") {
+        //        let num = Math.round(Math.random() * 1000000000);
+        //        interval = Math.round(Math.random() * 10000);
+        //        log("<== " + num);
+        //        dc.send("" + num);
+        //    }
+        //}, interval);
     }
 
     dc.onmessage = (e) => {
@@ -211,6 +242,28 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
     }
 
     return dc;
+}
+
+
+function setRemoteDescription() {
+    if (remote_description) {
+        try {
+            pc.setRemoteDescription(remote_description);
+            log("remote description set");
+        }
+        catch {
+            log("failed to set remote description");
+        }
+    } else {
+        log("remote description is not set");
+    }
+}
+
+function move(dir: string) {
+    if (dc.readyState == "open") {
+        log("<== " + dir);
+        dc.send(dir);
+    }
 }
 
 function log(msg: any) {
@@ -232,23 +285,31 @@ function log(msg: any) {
     }
 }
 
-function setRemoteDescription() {
-    if (remote_description) {
-        try {
-            pc.setRemoteDescription(remote_description);
-            log("remote description set");
-        }
-        catch {
-            log("failed to set remote description");
-        }
-    } else {
-        log("remote description is not set");
-    }
-}
 
-function move(dir: string) {
-    if (dc.readyState == "open") {
-        log("<== " + dir);
-        dc.send(dir);
-    }
+
+let iceServers = {
+    "iceServers": [
+        { 
+            "urls": [
+                "stun:fr-turn8.xirsys.com",
+            ]
+        },
+        {
+            "urls": [
+                "stun:stun.l.google.com:19302"
+            ]
+        }, 
+        {
+            "username": "xrlEivlkdTCQvwPYbCRHDur872L9CNM7DlbAya3tEhbBcn7zMgFFN8q43pP_2v-4AAAAAGmxwT1nd296ZHlr",
+            "credential": "d05d03e4-1d7f-11f1-b1bb-be96737d4d7e",
+            "urls": [
+                "turn:fr-turn8.xirsys.com:80?transport=udp",
+                "turn:fr-turn8.xirsys.com:3478?transport=udp",
+                "turn:fr-turn8.xirsys.com:80?transport=tcp",
+                "turn:fr-turn8.xirsys.com:3478?transport=tcp", 
+                "turns:fr-turn8.xirsys.com:443?transport=tcp",
+                "turns:fr-turn8.xirsys.com:5349?transport=tcp"
+            ]
+        }
+    ]
 }
