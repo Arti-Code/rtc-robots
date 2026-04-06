@@ -7,7 +7,8 @@ let pc_data: RTCPeerConnection;
 let dc: RTCDataChannel;
 let socket: WebSocket;
 let username: string = "ARTUR";
-let target: string = "ROBOT";
+let robot_target: string = "ROBOT";
+let camera_target: string = "CAMERA";
 let remote_description: RTCSessionDescription;
 let input_box = document.getElementById("inputBox") as HTMLDivElement;
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
@@ -71,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function disconnect() {
     if (dc) { dc.close(); }
-    pc_camera.close();
+    if (pc_data) { pc_data.close(); }
+    if (pc_camera) { pc_camera.close(); }
     socket.close();
     show_connection_buttons();
     log("disconnected");
@@ -79,22 +81,22 @@ function disconnect() {
 
 function tryConnect() {
     let user_input = document.getElementById("userName") as HTMLInputElement;
-    let target_input = document.getElementById("targetName") as HTMLInputElement;
+    let target_input = document.getElementById("robotName") as HTMLInputElement;
     username = user_input.value;
-    target = target_input.value;
-    if (username.length > 0 && target.length > 0) {
-        connect_socket(false);
+    robot_target = target_input.value;
+    if (username.length > 0 && robot_target.length > 0) {
+        connect_socket(false, true);
         hide_connection_buttons()
     }
 }
 
 function tryConnectCamera() {
     let user_input = document.getElementById("userName") as HTMLInputElement;
-    let target_input = document.getElementById("targetName") as HTMLInputElement;
+    let camera_input = document.getElementById("cameraName") as HTMLInputElement;
     username = user_input.value;
-    target = target_input.value;
-    if (username.length > 0 && target.length > 0) {
-        connect_socket(true);
+    camera_target = camera_input.value;
+    if (username.length > 0 && camera_target.length > 0) {
+        connect_socket(true, false);
         hide_connection_buttons()
     }
 }
@@ -108,14 +110,14 @@ function show_connection_buttons() {
 }
 
 function hide_connection_buttons() {
-    document.getElementById("startButton")?.setAttribute("hidden", "true");
-    document.getElementById("cameraButton")?.setAttribute("hidden", "true");
+    //document.getElementById("startButton")?.setAttribute("hidden", "true");
+    //document.getElementById("cameraButton")?.setAttribute("hidden", "true");
     document.getElementById("stopButton")?.removeAttribute("hidden");
-    document.getElementById("userName")?.setAttribute("hidden", "true");
-    document.getElementById("targetName")?.setAttribute("hidden", "true");
+    //document.getElementById("userName")?.setAttribute("hidden", "true");
+    //document.getElementById("targetName")?.setAttribute("hidden", "true");
 }
 
-function connect_socket(camera: boolean) {
+function connect_socket(camera: boolean, data: boolean) {
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
 
     socket.onmessage = (e) => {
@@ -124,7 +126,11 @@ function connect_socket(camera: boolean) {
         if (sd) {
             remote_description = JSON.parse(sd);
             if (remote_description) {
-                setRemoteDescription();
+                if (camera) {
+                    setRemoteDescription(pc_camera);
+                } else if (data) {
+                    setRemoteDescription(pc_data);
+                }
             } else {
                 log("remote description is null");
             }
@@ -135,34 +141,14 @@ function connect_socket(camera: boolean) {
 
     socket.onopen = () => {
         log("websocket connected");
-        register_peer(username);
-        pc_camera = create_pc(camera);
-
-        pc_camera.oniceconnectionstatechange = () => {
-            log(pc_camera.iceConnectionState);
-        };
-
-        pc_camera.onicecandidate = (e) => {
-            if (e.candidate === null) {
-                let sdp = JSON.stringify(pc_camera.localDescription);
-                let data = {
-                    "SessionDescription": 
-                    {
-                        "sender": username, 
-                        "description": sdp, 
-                        "target": target, 
-                        "kind": "Offer"
-                    }
-                };
-                socket.send(JSON.stringify(data));
-            }
+        if (camera) {
+            register_peer(username+"_CAMERA");
+            pc_camera = create_camera_pc();
         }
-
-        pc_camera.onnegotiationneeded = (e) => {
-            pc_camera.createOffer().then((d) => {
-                pc_camera.setLocalDescription(d);
-            }).catch(log);
-        };
+        if (data) {
+            register_peer(username+"_DATA");
+            pc_data = create_data_pc();
+        }
     };
 }
 
@@ -171,13 +157,9 @@ function register_peer(name: string) {
   socket.send(JSON.stringify(registerMsg));
 }
 
-function create_pc(camera: boolean): RTCPeerConnection {
+function create_camera_pc(): RTCPeerConnection {
     let pc = new RTCPeerConnection(iceServers);
-    if (camera) {
-        pc.addTransceiver('video', {'direction': 'recvonly'})
-    } else {
-        dc = create_data_channel(pc);
-    }
+    pc.addTransceiver('video', {'direction': 'recvonly'});
 
     pc.oniceconnectionstatechange = (e) => {
         log(pc.iceConnectionState);
@@ -191,7 +173,7 @@ function create_pc(camera: boolean): RTCPeerConnection {
                 {
                     "sender": username, 
                     "description": sdp, 
-                    "target": target, 
+                    "target": camera_target, 
                     "kind": "Offer"
                 }
             };
@@ -213,6 +195,38 @@ function create_pc(camera: boolean): RTCPeerConnection {
             pc.setLocalDescription(d);
         }).catch(log);
     }
+    return pc;
+}
+
+function create_data_pc(): RTCPeerConnection {
+    let pc = new RTCPeerConnection(iceServers);
+    dc = create_data_channel(pc);
+
+    pc.oniceconnectionstatechange = (e) => {
+        log(pc.iceConnectionState);
+    };
+
+    pc.onicecandidate = (e) => {
+        if (e.candidate === null) {
+            let sdp = JSON.stringify(pc.localDescription);
+            let data = {
+                "SessionDescription": 
+                {
+                    "sender": username, 
+                    "description": sdp, 
+                    "target": robot_target, 
+                    "kind": "Offer"
+                }
+            };
+            socket.send(JSON.stringify(data));
+        }
+    };
+
+    pc.onnegotiationneeded = (e) => {
+        pc.createOffer().then((d) => {
+            pc.setLocalDescription(d);
+        }).catch(log);
+    };
     return pc;
 }
 
@@ -246,10 +260,10 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
 }
 
 
-function setRemoteDescription() {
+function setRemoteDescription(pc: RTCPeerConnection) {
     if (remote_description) {
         try {
-            pc_camera.setRemoteDescription(remote_description);
+            pc.setRemoteDescription(remote_description);
             log("remote description set");
         }
         catch {

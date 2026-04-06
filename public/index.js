@@ -1,11 +1,13 @@
 "use strict";
 //import {log} from "./util.js"; 
 //import {iceServers} from "./iceservers.js";
-var pc;
+var pc_camera;
+var pc_data;
 var dc;
 var socket;
 var username = "ARTUR";
-var target = "ROBOT";
+var robot_target = "ROBOT";
+var camera_target = "CAMERA";
 var remote_description;
 var input_box = document.getElementById("inputBox");
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
@@ -71,28 +73,33 @@ function disconnect() {
     if (dc) {
         dc.close();
     }
-    pc.close();
+    if (pc_data) {
+        pc_data.close();
+    }
+    if (pc_camera) {
+        pc_camera.close();
+    }
     socket.close();
     show_connection_buttons();
     log("disconnected");
 }
 function tryConnect() {
     var user_input = document.getElementById("userName");
-    var target_input = document.getElementById("targetName");
+    var target_input = document.getElementById("robotName");
     username = user_input.value;
-    target = target_input.value;
-    if (username.length > 0 && target.length > 0) {
-        connect_socket(false);
+    robot_target = target_input.value;
+    if (username.length > 0 && robot_target.length > 0) {
+        connect_socket(false, true);
         hide_connection_buttons();
     }
 }
 function tryConnectCamera() {
     var user_input = document.getElementById("userName");
-    var target_input = document.getElementById("targetName");
+    var camera_input = document.getElementById("cameraName");
     username = user_input.value;
-    target = target_input.value;
-    if (username.length > 0 && target.length > 0) {
-        connect_socket(true);
+    camera_target = camera_input.value;
+    if (username.length > 0 && camera_target.length > 0) {
+        connect_socket(true, false);
         hide_connection_buttons();
     }
 }
@@ -105,14 +112,14 @@ function show_connection_buttons() {
     (_e = document.getElementById("targetName")) === null || _e === void 0 ? void 0 : _e.removeAttribute("hidden");
 }
 function hide_connection_buttons() {
-    var _a, _b, _c, _d, _e;
-    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("hidden", "true");
-    (_b = document.getElementById("cameraButton")) === null || _b === void 0 ? void 0 : _b.setAttribute("hidden", "true");
-    (_c = document.getElementById("stopButton")) === null || _c === void 0 ? void 0 : _c.removeAttribute("hidden");
-    (_d = document.getElementById("userName")) === null || _d === void 0 ? void 0 : _d.setAttribute("hidden", "true");
-    (_e = document.getElementById("targetName")) === null || _e === void 0 ? void 0 : _e.setAttribute("hidden", "true");
+    var _a;
+    //document.getElementById("startButton")?.setAttribute("hidden", "true");
+    //document.getElementById("cameraButton")?.setAttribute("hidden", "true");
+    (_a = document.getElementById("stopButton")) === null || _a === void 0 ? void 0 : _a.removeAttribute("hidden");
+    //document.getElementById("userName")?.setAttribute("hidden", "true");
+    //document.getElementById("targetName")?.setAttribute("hidden", "true");
 }
-function connect_socket(camera) {
+function connect_socket(camera, data) {
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
     socket.onmessage = function (e) {
         var sdp = JSON.parse(e.data);
@@ -120,7 +127,12 @@ function connect_socket(camera) {
         if (sd) {
             remote_description = JSON.parse(sd);
             if (remote_description) {
-                setRemoteDescription();
+                if (camera) {
+                    setRemoteDescription(pc_camera);
+                }
+                else if (data) {
+                    setRemoteDescription(pc_data);
+                }
             }
             else {
                 log("remote description is null");
@@ -132,44 +144,23 @@ function connect_socket(camera) {
     };
     socket.onopen = function () {
         log("websocket connected");
-        register_peer(username);
-        pc = create_pc(camera);
-        pc.oniceconnectionstatechange = function () {
-            log(pc.iceConnectionState);
-        };
-        pc.onicecandidate = function (e) {
-            if (e.candidate === null) {
-                var sdp = JSON.stringify(pc.localDescription);
-                var data = {
-                    "SessionDescription": {
-                        "sender": username,
-                        "description": sdp,
-                        "target": target,
-                        "kind": "Offer"
-                    }
-                };
-                socket.send(JSON.stringify(data));
-            }
-        };
-        pc.onnegotiationneeded = function (e) {
-            pc.createOffer().then(function (d) {
-                pc.setLocalDescription(d);
-            }).catch(log);
-        };
+        if (camera) {
+            register_peer(username + "_CAMERA");
+            pc_camera = create_camera_pc();
+        }
+        if (data) {
+            register_peer(username + "_DATA");
+            pc_data = create_data_pc();
+        }
     };
 }
 function register_peer(name) {
     var registerMsg = { "Register": name };
     socket.send(JSON.stringify(registerMsg));
 }
-function create_pc(camera) {
+function create_camera_pc() {
     var pc = new RTCPeerConnection(iceServers);
-    if (camera) {
-        pc.addTransceiver('video', { 'direction': 'recvonly' });
-    }
-    else {
-        dc = create_data_channel(pc);
-    }
+    pc.addTransceiver('video', { 'direction': 'recvonly' });
     pc.oniceconnectionstatechange = function (e) {
         log(pc.iceConnectionState);
     };
@@ -180,7 +171,7 @@ function create_pc(camera) {
                 "SessionDescription": {
                     "sender": username,
                     "description": sdp,
-                    "target": target,
+                    "target": camera_target,
                     "kind": "Offer"
                 }
             };
@@ -194,6 +185,33 @@ function create_pc(camera) {
         el.srcObject = e.streams[0];
         el.autoplay = true;
         el.controls = true;
+    };
+    pc.onnegotiationneeded = function (e) {
+        pc.createOffer().then(function (d) {
+            pc.setLocalDescription(d);
+        }).catch(log);
+    };
+    return pc;
+}
+function create_data_pc() {
+    var pc = new RTCPeerConnection(iceServers);
+    dc = create_data_channel(pc);
+    pc.oniceconnectionstatechange = function (e) {
+        log(pc.iceConnectionState);
+    };
+    pc.onicecandidate = function (e) {
+        if (e.candidate === null) {
+            var sdp = JSON.stringify(pc.localDescription);
+            var data = {
+                "SessionDescription": {
+                    "sender": username,
+                    "description": sdp,
+                    "target": robot_target,
+                    "kind": "Offer"
+                }
+            };
+            socket.send(JSON.stringify(data));
+        }
     };
     pc.onnegotiationneeded = function (e) {
         pc.createOffer().then(function (d) {
@@ -226,7 +244,7 @@ function create_data_channel(pc) {
     };
     return dc;
 }
-function setRemoteDescription() {
+function setRemoteDescription(pc) {
     if (remote_description) {
         try {
             pc.setRemoteDescription(remote_description);
