@@ -2,7 +2,8 @@
 //import {iceServers} from "./iceservers.js";
 
 
-let pc: RTCPeerConnection;
+let pc_camera: RTCPeerConnection;
+let pc_data: RTCPeerConnection;
 let dc: RTCDataChannel;
 let socket: WebSocket;
 let username: string = "ARTUR";
@@ -70,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function disconnect() {
     if (dc) { dc.close(); }
-    pc.close();
+    pc_camera.close();
     socket.close();
     show_connection_buttons();
     log("disconnected");
@@ -135,15 +136,15 @@ function connect_socket(camera: boolean) {
     socket.onopen = () => {
         log("websocket connected");
         register_peer(username);
-        pc = create_pc(camera);
+        pc_camera = create_pc(camera);
 
-        pc.oniceconnectionstatechange = () => {
-            log(pc.iceConnectionState);
+        pc_camera.oniceconnectionstatechange = () => {
+            log(pc_camera.iceConnectionState);
         };
 
-        pc.onicecandidate = (e) => {
+        pc_camera.onicecandidate = (e) => {
             if (e.candidate === null) {
-                let sdp = JSON.stringify(pc.localDescription);
+                let sdp = JSON.stringify(pc_camera.localDescription);
                 let data = {
                     "SessionDescription": 
                     {
@@ -157,9 +158,9 @@ function connect_socket(camera: boolean) {
             }
         }
 
-        pc.onnegotiationneeded = (e) => {
-            pc.createOffer().then((d) => {
-                pc.setLocalDescription(d);
+        pc_camera.onnegotiationneeded = (e) => {
+            pc_camera.createOffer().then((d) => {
+                pc_camera.setLocalDescription(d);
             }).catch(log);
         };
     };
@@ -248,7 +249,7 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
 function setRemoteDescription() {
     if (remote_description) {
         try {
-            pc.setRemoteDescription(remote_description);
+            pc_camera.setRemoteDescription(remote_description);
             log("remote description set");
         }
         catch {
