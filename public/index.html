@@ -9,22 +9,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-        <div class="logo">
+        <!-- <div class="logo">
                 <img src="./title.png" height="96">
+        </div> -->
+
+        <div class="container">
+                <div class="container_row">
+                        <img src="./robot.png" height="96">
+                        <button id="startButton" class="button btn_connect" onclick="tryConnect()">Connect</button>
+                        <button id="cameraButton" class="button btn_connect" onclick="tryConnectCamera()">Camera</button>
+                        <button id="stopButton" class="button btn_disconnect" onclick="disconnect()" hidden>Disconnect</button>
+                </div>
         </div>
 
         <div class="container" id="inputBox">
                 <div class="container_row">
                         <input type="text" id="userName" value="ARTUR">
                         <input type="text" id="targetName" value="ROBOT">
-                </div>
-        </div>
-
-        <div class="container">
-                <div class="container_row">
-                        <button id="startButton" class="button btn_connect" onclick="tryConnect()">Connect</button>
-                        <button id="cameraButton" class="button btn_connect" onclick="tryConnectCamera()">Camera</button>
-                        <button id="stopButton" class="button btn_disconnect" onclick="disconnect()" hidden>Disconnect</button>
                 </div>
         </div>
         
