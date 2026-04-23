@@ -24,12 +24,18 @@
 
         <div class="container" id="inputBox">
                 <div class="container_row">
-                        <input type="text" id="userName" value="ARTUR">
-                        <input type="text" id="robotName" value="ROBOT">
-                        <input type="text" id="cameraName" value="CAMERA">
+                        <input type="text" id="user1Name" value="ARTUR1">
+                       <!--  <input type="text" id="user2Name" value="ARTUR2"> -->
                 </div>
         </div>
         
+        <div class="container" id="inputBox">
+                <div class="container_row">
+                        <input type="text" id="robotTarget" value="ROBOT">
+                        <input type="text" id="cameraTarget" value="CAMERA">
+                </div>
+        </div>
+
         <div class="container">
 
                 <div class="column">
@@ -47,7 +53,7 @@
                 </div>
         
                 <div class="column">
-                        <div id="moveButton", class="cell"> <!--  onclick="move('MOVE')"> -->
+                        <div id="moveButton", class="cell" onclick="move('MOVE')">
                                 <img src="./arrow_move.png" width="72">
                         </div>
                         <div id="backButton", class="cell" onclick="move('BACK')">
