@@ -13,21 +13,50 @@
                 <img src="./title.png" height="96">
         </div> -->
 
-        <div class="container">
+        <!-- <div class="container">
                 <div class="container_row">
-                        <img src="./robot.png" height="96">
-                        <button id="startButton" class="button btn_connect" onclick="tryConnect()">Connect</button>
-                        <button id="cameraButton" class="button btn_connect" onclick="tryConnectCamera()">Camera</button>
-                        <button id="stopButton" class="button btn_disconnect" onclick="disconnect()" hidden>Disconnect</button>
+                        <button id="socketButton" class="button btn_connect" onclick="connect_websocket()">Connect</button>
+                        <button id="socketDisconnectButton" class="button btn_disconnect" onclick="disconnect_websocket()" hidden>Disconnect</button>
+                </div>
+        </div> -->
+
+        <div id="websocket_section">
+                <div class="container">
+                        <div class="container_row">
+                                <input type="text" id="userName" value="ARTURO">
+                                <button id="socketButton" class="button btn_connect" onclick="connect_websocket()">Connect Signaling</button>
+                        </div>
                 </div>
         </div>
 
-        <div class="container" id="inputBox">
-                <div class="container_row">
-                        <input type="text" id="user1Name" value="ARTUR1">
-                       <!--  <input type="text" id="user2Name" value="ARTUR2"> -->
+        <div id="rtc_section" hidden>
+                <div class="container">
+                        <div class="container_row">
+                                <input type="text" id="robotTarget" value="ROBOT">
+                                <input type="text" id="cameraTarget" value="CAMERA">
+                        </div>
+                        <div class="container_row">
+                                <button id="startButton" class="button btn_connect" onclick="connectRobot()">Connect Robot</button>
+                        </div>
                 </div>
         </div>
+
+        <div class="container">
+                <div class="container_row">
+                        <img src="./robot.png" height="96">
+                        <button id="socketButton" class="button btn_connect" onclick="connect_websocket()">Connect</button>
+                        <button id="socketDisconnectButton" class="button btn_disconnect" onclick="disconnect_websocket()" hidden>Disconnect</button>
+                        <button id="startButton" class="button btn_connect" onclick="connectRobot()">Connect</button>
+                        <!-- <button id="cameraButton" class="button btn_connect" onclick="tryConnectCamera()">Camera</button> -->
+                        <button id="stopButton" class="button btn_disconnect" onclick="disconnectRobot()" hidden>Disconnect</button>
+                </div>
+        </div>
+
+        <!-- <div class="container" id="inputBox">
+                <div class="container_row">
+                        <input type="text" id="user1Name" value="ARTUR">
+                </div>
+        </div> -->
         
         <div class="container" id="inputBox">
                 <div class="container_row">
