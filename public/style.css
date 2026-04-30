@@ -1,7 +1,7 @@
 
 .container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
     justify-self: center;
@@ -28,11 +28,10 @@
 
 .video {
     width: 100%;
-    min-width: 420px;
-    min-height: 360px;
-    margin: 5px 5px;
-    border-width: 12;
-    border-color: slateblue;
+    min-width: 720px;
+    min-height: 480px;
+    border-width: 6;
+    border-color: rgb(0, 26, 255);
     border-style: solid;
     margin: 4px 4px;
 }
@@ -41,6 +40,7 @@
     display: flex;
     font-size: xx-large;
     height: 100%;
+    min-height: 200px;
     margin-top: 15%;
     margin-bottom: 15%;
     margin-left: 10%;
@@ -48,7 +48,7 @@
     border-style: solid;
     border-width: 4px;
     border-radius: 10%;
-    border-color: dodgerblue;
+    border-color: rgb(99, 100, 100);
 }
 
 .logo {
@@ -60,15 +60,9 @@
     margin: auto;
 }
 
-.input {
-    margin: 10px;
-    padding: 10px;
-    font-size: xx-large;
-}
-
 .button {
     margin: 5px;
-    padding: 5px 5px;
+    padding: 5px 10px;
     font-size: xx-large;
     cursor: pointer;
     border-style: solid;
@@ -77,13 +71,13 @@
 }
 
 .btn_connect {
-    color: green;
-    border-color: green;
+    color: rgb(0, 255, 0);
+    border-color: rgb(0, 255, 0);
 }
 
 .btn_disconnect {
-    color: orange;
-    border-color: orange;
+    color: rgb(255, 208, 0);
+    border-color: rgb(255, 208, 0);
 }
 
 .title {
@@ -91,7 +85,7 @@
     font-weight: bold;
     margin-bottom: 20px;
     margin-top: 20px;
-    color: green;
+    color: rgb(0, 255, 0);
     align-items: center;
     justify-self: center;
 }
@@ -105,16 +99,41 @@
     column-height: inherit;
 }
 
-.row {
+body {
+    background-color: rgb(39, 42, 46);
+}
+
+button {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    font-size: x-small;
+    background-color: rgb(39, 42, 46);
 }
 
 input {
-    min-height: fit-content;
+    display: flex;
+    min-height: auto;
     font-size: xx-large;
     text-align: center;
+    background-color: rgb(39, 42, 46);
+    color: whitesmoke;
+    border-width: 4px;
+    border-color: lightgrey;
+    border-radius: 12px;
+    box-shadow: none ! important;
+    outline: none ! important;
+    box-shadow: none !important;
+}
+
+input:focus {
+    display: flex;
+    min-height: auto;
+    font-size: xx-large;
+    text-align: center;
+    background-color: rgb(39, 42, 46);
+    color: whitesmoke;
+    border-width: 4px;
+    border-color: cyan;
+    border-radius: 12px;
+    box-shadow: none ! important;
+    outline: none ! important;
+    box-shadow: none !important;
 }

@@ -61,16 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Element with ID 'leftButton' not found.");
     }
 });
-function switch_socket_buttons() {
-    let socketButton = document.getElementById("socketButton");
-    let socketDisconnectButton = document.getElementById("socketDisconnectButton");
-    if (socketButton) {
-        socketButton.hidden = !socketButton.hidden;
-    }
-    if (socketDisconnectButton) {
-        socketDisconnectButton.hidden = !socketDisconnectButton.hidden;
-    }
-}
 function hide_socket_div() {
     let websocket_section = document.getElementById("websocket_section");
     if (websocket_section) {
@@ -116,11 +106,12 @@ function show_disconnect() {
 function hide_disconnect() {
     let close_section = document.getElementById("close_control_div");
     if (close_section) {
-        close_section.hidden = false;
+        close_section.hidden = true;
     }
 }
 function connectWebsocket() {
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
+    //socket = new WebSocket("ws://127.0.0.1:8080");
     let user_input = document.getElementById("userName");
     username = user_input.value;
     let socketButton = document.getElementById("socketButton");
@@ -153,6 +144,7 @@ function connectWebsocket() {
     socket.onopen = () => {
         //log("websocket connected");
         register_peer(socket, username);
+        get_peers_online(socket, username);
         socked_opened = true;
         hide_socket_div();
         show_rtc_div();
@@ -192,102 +184,18 @@ function connectRobot() {
 }
 function disconnectRobot() {
     hide_control();
-    hide_disconnect();
     hide_rtc_div();
     disconnect();
     show_socket_div();
+    hide_disconnect();
 }
-/* function tryConnectData() {
-    let user_input = document.getElementById("userName") as HTMLInputElement;
-    let target_input = document.getElementById("robotTarget") as HTMLInputElement;
-    //username = user_input.value;
-    robot_target = target_input.value;
-    if (username.length > 0 && robot_target.length > 0) {
-        //connect_socket(false, true);
-        pc_data = create_data_pc();
-        hideConnectRobotButtons()
-    }
-} */
-/* function tryConnectCamera() {
-    let user_input = document.getElementById("userName") as HTMLInputElement;
-    let camera_input = document.getElementById("cameraTarget") as HTMLInputElement;
-    //username = user_input.value;
-    camera_target = camera_input.value;
-    if (username.length > 0 && camera_target.length > 0) {
-        //connect_socket(true, false);
-        pc_camera = create_camera_pc();
-        hideConnectRobotButtons()
-    } else {
-        log("username or camera target is empty");
-    }
-} */
-/* function showConnectRobotButtons() {
-    document.getElementById("startButton")?.removeAttribute("hidden");
-    //document.getElementById("cameraButton")?.removeAttribute("hidden");
-    document.getElementById("stopButton")?.setAttribute("hidden", "true");
-    document.getElementById("userName")?.removeAttribute("hidden");
-    //document.getElementById("user2Name")?.removeAttribute("hidden");
-    document.getElementById("robotTarget")?.removeAttribute("hidden");
-    document.getElementById("cameraTarget")?.removeAttribute("hidden");
-}
-
-function hideConnectRobotButtons() {
-    document.getElementById("startButton")?.setAttribute("hidden", "true");
-    //document.getElementById("cameraButton")?.setAttribute("hidden", "true");
-    document.getElementById("stopButton")?.removeAttribute("hidden");
-    document.getElementById("userName")?.setAttribute("hidden", "true");
-    //document.getElementById("user2Name")?.setAttribute("hidden", "true");
-    document.getElementById("robotTarget")?.setAttribute("hidden", "true");
-    document.getElementById("cameraTarget")?.setAttribute("hidden", "true");
-} */
-/* function connect_socket(camera: boolean, data: boolean) {
-    let socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
-
-    socket.onmessage = (e) => {
-        let sdp = JSON.parse(e.data);
-        let sd = sdp.SessionDescription.description;
-        if (sd) {
-            remote_description = JSON.parse(sd);
-            if (remote_description) {
-                if (camera) {
-                    setRemoteDescription(pc_camera);
-                } else if (data) {
-                    setRemoteDescription(pc_data);
-                }
-            } else {
-                log("remote description is null");
-            }
-        } else {
-            log("description is null");
-        }
-    }
-
-    socket.onopen = () => {
-        log("websocket connected");
-        if (!registered) {
-            register_peer(socket, username);
-            registered = true;
-        }
-        if (camera) {
-            //register_peer(socket, username2);
-            pc_camera = create_camera_pc();
-        }
-        if (data) {
-            //register_peer(socket, username1);
-            pc_data = create_data_pc();
-        }
-    };
-
-    if (camera) {
-        socket_camera = socket;
-    }
-    if (data) {
-        socket_data = socket;
-    }
-} */
 function register_peer(socket, name) {
     let registerMsg = { "Register": name };
     socket.send(JSON.stringify(registerMsg));
+}
+function get_peers_online(socket, name) {
+    let getPeerListMsg = { "GetPeerList": name };
+    socket.send(JSON.stringify(getPeerListMsg));
 }
 function create_camera_pc() {
     let pc = new RTCPeerConnection(iceServers);
