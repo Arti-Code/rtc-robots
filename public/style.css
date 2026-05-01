@@ -8,6 +8,15 @@
     margin: auto;
 }
 
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    justify-self: center;
+    margin: auto;
+}
+
 .container_log {
     display: flex;
     flex-direction: column;
@@ -28,12 +37,12 @@
 
 .video {
     width: 100%;
-    min-width: 720px;
-    min-height: 480px;
-    border-width: 6;
-    border-color: rgb(0, 26, 255);
+    min-width: 300px;
+    min-height: 200px;
+    border-width: 4;
+    border-color: rgb(99, 100, 100);
     border-style: solid;
-    margin: 4px 4px;
+    margin: 2px 2px;
 }
 
 .cell {

@@ -1,14 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebRTC Robot</title>
-    <script src="index.js"></script>
-    <link rel="icon" type="image/x-icon" href="./favicon.png">
-    <link rel="stylesheet" href="style.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WebRTC Robot</title>
+        <script src="index.js"></script>
+        <link rel="icon" type="image/x-icon" href="./favicon.png">
+        <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
+        <div id="control_section" hidden>
+                <div class="row">
+                        <div class="column">
+                                <div id="rightButton" , class="cell" onmousedown="move('RIGHT')"
+                                        onmouseup="move('STOP')">
+                                        <img src="./arrow_right.png" width="80">
+                                </div>
+
+                                <div id="leftButton" , class="cell" onmousedown="move('LEFT')" onmouseup="move('STOP')">
+                                        <img src="./arrow_left.png" width="80">
+                                </div>
+                        </div>
+                        <div class="column">
+                                <video id="remoteVideos" class="video"></video>
+                        </div>
+                        <div class="column">
+                                <div id="moveButton" , class="cell" onmousedown="move('MOVE')" onmouseup="move('STOP')">
+                                        <img src="./arrow_move.png" width="80">
+                                </div>
+
+                                <div id="backButton" , class="cell" onmousedown="move('BACK')" onmouseup="move('STOP')">
+                                        <img src="./arrow_back.png" width="80">
+                                </div>
+                        </div>
+                </div>
+        </div>
+
         <div class="container">
                 <div class="container_row">
                         <img src="./robot.png" width="48" height="48">
@@ -18,11 +48,10 @@
         <div id="websocket_section">
                 <div class="container">
                         <!-- <div class="container_row"> -->
-                                <input type="text" id="userName" value="ARTURO">
-                                <button id="socketButton" class="button btn_connect" 
-                                        onclick="connectWebsocket()">
-                                        SIGNALING
-                                </button>
+                        <input type="text" id="userName" value="ARTURO">
+                        <button id="socketButton" class="button btn_connect" onclick="connectWebsocket()">
+                                SIGNALING
+                        </button>
                         <!-- </div> -->
                 </div>
         </div>
@@ -34,56 +63,9 @@
                                 <input type="text" id="cameraTarget" value="CAMERA">
                         </div>
                         <div class="container_row">
-                                <button id="startButton" class="button btn_connect" 
-                                        onclick="connectRobot()">
+                                <button id="startButton" class="button btn_connect" onclick="connectRobot()">
                                         CONNECT
                                 </button>
-                        </div>
-                </div>
-        </div>
-
-        <div id="control_section" hidden>
-                <div class="container">
-                        <div class="column">
-                                <div 
-                                id="rightButton", 
-                                class="cell"
-                                onmousedown="move('RIGHT')"
-                                onmouseup="move('STOP')" 
-                                >
-                                        <img src="./arrow_right.png" width="72">
-                                </div>
-
-                                <div 
-                                id="leftButton", 
-                                class="cell" 
-                                onmousedown="move('LEFT')"
-                                onmouseup="move('STOP')" 
-                                >
-                                        <img src="./arrow_left.png" width="72">
-                                </div>
-                        </div>
-                        <div class="column">
-                                <video id="remoteVideos" class="video"></video>
-                        </div>
-                        <div class="column">
-                                <div 
-                                id="moveButton", 
-                                class="cell" 
-                                onmousedown="move('MOVE')"
-                                onmouseup="move('STOP')" 
-                                >
-                                        <img src="./arrow_move.png" width="72">
-                                </div>
-
-                                <div 
-                                id="backButton", 
-                                class="cell" 
-                                onmousedown="move('BACK')"
-                                onmouseup="move('STOP')" 
-                                >
-                                        <img src="./arrow_back.png" width="72">
-                                </div>
                         </div>
                 </div>
         </div>
@@ -91,18 +73,18 @@
         <div id="close_control_div" hidden>
                 <div class="container">
                         <div class="container_row">
-                                <button id="disconnectButton" class="button btn_connect" 
-                                        onclick="disconnectRobot()">
+                                <button id="disconnectButton" class="button btn_connect" onclick="disconnectRobot()">
                                         DISCONNECT
                                 </button>
                         </div>
                 </div>
         </div>
 
-    <div class="container_log" id="messages" hidden>
-        <div class="container_row">
-            <p id="log"></p>
+        <div class="container_log" id="messages" hidden>
+                <div class="container_row">
+                        <p id="log"></p>
+                </div>
         </div>
-    </div>
 </body>
+
 </html>
