@@ -4,10 +4,11 @@
 <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>WebRTC Robot</title>
+        <title>RTC Robot</title>
         <script src="index.js"></script>
         <link rel="icon" type="image/x-icon" href="./favicon.png">
         <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -15,24 +16,35 @@
         <div id="control_section" hidden>
                 <div class="row">
                         <div class="column">
-                                <div id="rightButton" , class="cell" onmousedown="move('RIGHT')"
+                                <div id="rightButton" , class="cell"
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('RIGHT')"
                                         onmouseup="move('STOP')">
-                                        <img src="./arrow_right.png" width="80">
+                                        <img src="./arrow_left.png" width="80">
                                 </div>
 
-                                <div id="leftButton" , class="cell" onmousedown="move('LEFT')" onmouseup="move('STOP')">
-                                        <img src="./arrow_left.png" width="80">
+                                <div id="leftButton" , class="cell" 
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('LEFT')" 
+                                        onmouseup="move('STOP')">
+                                        <img src="./arrow_right.png" width="80">
                                 </div>
                         </div>
                         <div class="column">
                                 <video id="remoteVideos" class="video"></video>
                         </div>
                         <div class="column">
-                                <div id="moveButton" , class="cell" onmousedown="move('MOVE')" onmouseup="move('STOP')">
+                                <div id="moveButton" , class="cell" 
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('MOVE')" 
+                                        onmouseup="move('STOP')">
                                         <img src="./arrow_move.png" width="80">
                                 </div>
 
-                                <div id="backButton" , class="cell" onmousedown="move('BACK')" onmouseup="move('STOP')">
+                                <div id="backButton" , class="cell" 
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('BACK')" 
+                                        onmouseup="move('STOP')">
                                         <img src="./arrow_back.png" width="80">
                                 </div>
                         </div>
@@ -52,6 +64,7 @@
                         <button id="socketButton" class="button btn_connect" onclick="connectWebsocket()">
                                 SIGNALING
                         </button>
+                        <!-- <button class="btn"><i class="fa-solid fa-link"></i></button> -->
                         <!-- </div> -->
                 </div>
         </div>

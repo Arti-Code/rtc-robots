@@ -8,6 +8,7 @@ let camera_target: string = "CAMERA";
 let remote_description: RTCSessionDescription;
 let input_box = document.getElementById("inputBox") as HTMLDivElement;
 let socked_opened = false;
+let timer = 0.0;
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
 
 
@@ -335,7 +336,9 @@ function log(msg: any) {
     }
 }
 
-
+function preventContextMenu(event: MouseEvent) {
+    event.preventDefault();
+}
 
 let iceServers = {
     "iceServers": [

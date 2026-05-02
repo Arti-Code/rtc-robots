@@ -9,6 +9,7 @@ let camera_target = "CAMERA";
 let remote_description;
 let input_box = document.getElementById("inputBox");
 let socked_opened = false;
+let timer = 0.0;
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
 document.addEventListener('DOMContentLoaded', () => {
     console.log("init loader");
@@ -314,6 +315,9 @@ function log(msg) {
             logArea.children[i].remove();
         }
     }
+}
+function preventContextMenu(event) {
+    event.preventDefault();
 }
 let iceServers = {
     "iceServers": [
