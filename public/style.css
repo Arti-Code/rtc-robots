@@ -1,3 +1,25 @@
+#myVideo {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.content {
+  position: flex;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.0);
+  color: #f1f1f1;
+  height: 100%;
+  padding: 5px;
+}
+
+.new_control {
+    display:grid;
+    grid-template-columns: 20% 60% 20%;
+    margin: auto;
+}
 
 .container {
     display: flex;
@@ -48,16 +70,12 @@
 .cell {
     display: flex;
     font-size: xx-large;
-    height: 100%;
-    min-height: 200px;
-    margin-top: 15%;
-    margin-bottom: 15%;
-    margin-left: 10%;
-    margin-right: 10%;
+    justify-content: center;
+    margin: auto;
     border-style: solid;
     border-width: 4px;
     border-radius: 10%;
-    border-color: rgb(99, 100, 100);
+    border-color: rgb(0, 255, 255);
 }
 
 .logo {
@@ -123,7 +141,7 @@ body {
 
 button {
     display: flex;
-    background-color: rgb(39, 42, 46);
+    background-color: rgba(39, 42, 46, 0.0);
 }
 
 input {

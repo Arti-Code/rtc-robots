@@ -228,7 +228,7 @@ function create_camera_pc(): RTCPeerConnection {
     pc.ontrack = function (e) {
         e.currentTarget
         console.log("track received");
-        let el = document.getElementById("remoteVideos") as HTMLVideoElement;
+        let el = document.getElementById("myVideo") as HTMLVideoElement;
         el.srcObject = e.streams[0];
         el.autoplay = true;
         el.controls = true;

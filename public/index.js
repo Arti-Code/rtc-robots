@@ -222,7 +222,7 @@ function create_camera_pc() {
     pc.ontrack = function (e) {
         e.currentTarget;
         console.log("track received");
-        let el = document.getElementById("remoteVideos");
+        let el = document.getElementById("myVideo");
         el.srcObject = e.streams[0];
         el.autoplay = true;
         el.controls = true;

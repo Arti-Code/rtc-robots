@@ -12,9 +12,12 @@
 </head>
 
 <body>
-
-        <div id="control_section" hidden>
-                <div class="row">
+        <video autoplay muted loop id="myVideo">
+                <!-- <source src="rain.mp4" type="video/mp4"> -->
+        </video>
+        <div class="content">
+        <div id="control_section" class="" hidden>
+                <div class="new_control">
                         <div class="column">
                                 <div id="rightButton" , class="cell"
                                         oncontextmenu="preventContextMenu(event)" 
@@ -31,7 +34,7 @@
                                 </div>
                         </div>
                         <div class="column">
-                                <video id="remoteVideos" class="video"></video>
+                                <!-- <video id="remoteVideos" class="video"></video> -->
                         </div>
                         <div class="column">
                                 <div id="moveButton" , class="cell" 
@@ -97,6 +100,7 @@
                 <div class="container_row">
                         <p id="log"></p>
                 </div>
+        </div>
         </div>
 </body>
 
