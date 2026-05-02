@@ -1,24 +1,19 @@
 "use strict";
-//import {log} from "./util.js"; 
-//import {iceServers} from "./iceservers.js";
-var pc;
-var dc;
-var socket;
-var username = "ARTUR";
-var target = "ROBOT";
-var remote_description;
-var input_box = document.getElementById("inputBox");
+let pc_camera;
+let pc_data;
+let dc;
+let socket;
+let username = "ARTURO";
+let robot_target = "ROBOT";
+let camera_target = "CAMERA";
+let remote_description;
+let input_box = document.getElementById("inputBox");
+let socked_opened = false;
+let timer = 0.0;
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
-/* move_btn.ontouchend = (e) => {
-    move("STOP");
-}
-
-move_btn.ontouchstart = (e) => {
-    move("MOVE");
-} */
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     console.log("init loader");
-    var move_button = document.getElementById('moveButton');
+    const move_button = document.getElementById('moveButton');
     if (move_button) {
         move_button.ontouchend = function (event) {
             move("STOP");
@@ -30,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     else {
         console.error("Element with ID 'moveButton' not found.");
     }
-    var back_button = document.getElementById('backButton');
+    const back_button = document.getElementById('backButton');
     if (back_button) {
         back_button.ontouchend = function (event) {
             move("STOP");
@@ -42,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
     else {
         console.error("Element with ID 'backButton' not found.");
     }
-    var right_button = document.getElementById('rightButton');
+    const right_button = document.getElementById('rightButton');
     if (right_button) {
         right_button.ontouchend = function (event) {
             move("STOP");
@@ -54,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     else {
         console.error("Element with ID 'rightButton' not found.");
     }
-    var left_button = document.getElementById('leftButton');
+    const left_button = document.getElementById('leftButton');
     if (left_button) {
         left_button.ontouchend = function (event) {
             move("STOP");
@@ -67,121 +62,158 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error("Element with ID 'leftButton' not found.");
     }
 });
+function hide_socket_div() {
+    let websocket_section = document.getElementById("websocket_section");
+    if (websocket_section) {
+        websocket_section.hidden = true;
+    }
+}
+function show_socket_div() {
+    let websocket_section = document.getElementById("websocket_section");
+    if (websocket_section) {
+        websocket_section.hidden = false;
+    }
+}
+function show_rtc_div() {
+    let rtc_section = document.getElementById("rtc_section");
+    if (rtc_section) {
+        rtc_section.hidden = false;
+    }
+}
+function hide_rtc_div() {
+    let rtc_section = document.getElementById("rtc_section");
+    if (rtc_section) {
+        rtc_section.hidden = true;
+    }
+}
+function show_control() {
+    let control_section = document.getElementById("control_section");
+    if (control_section) {
+        control_section.hidden = false;
+    }
+}
+function hide_control() {
+    let control_section = document.getElementById("control_section");
+    if (control_section) {
+        control_section.hidden = true;
+    }
+}
+function show_disconnect() {
+    let close_section = document.getElementById("close_control_div");
+    if (close_section) {
+        close_section.hidden = false;
+    }
+}
+function hide_disconnect() {
+    let close_section = document.getElementById("close_control_div");
+    if (close_section) {
+        close_section.hidden = true;
+    }
+}
+function connectWebsocket() {
+    socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
+    //socket = new WebSocket("ws://127.0.0.1:8080");
+    let user_input = document.getElementById("userName");
+    username = user_input.value;
+    let socketButton = document.getElementById("socketButton");
+    if (socketButton) {
+        socketButton.textContent = "Connecting...";
+    }
+    socket.onmessage = (e) => {
+        let sdp = JSON.parse(e.data);
+        let sd = sdp.SessionDescription.description;
+        let conn_type = sdp.SessionDescription.connection_type;
+        if (sd) {
+            remote_description = JSON.parse(sd);
+            if (remote_description) {
+                console.log("connection type: " + conn_type);
+                if (conn_type == "Video") {
+                    setRemoteDescription(pc_camera);
+                }
+                else if (conn_type == "Data") {
+                    setRemoteDescription(pc_data);
+                }
+            }
+            else {
+                console.log("remote description is null");
+            }
+        }
+        else {
+            console.log("description is null");
+        }
+    };
+    socket.onopen = () => {
+        //log("websocket connected");
+        register_peer(socket, username);
+        get_peers_online(socket, username);
+        socked_opened = true;
+        hide_socket_div();
+        show_rtc_div();
+        console.log("Websocket connected");
+        let socketButton = document.getElementById("socketButton");
+        if (socketButton) {
+            socketButton.textContent = "Connect Signaling";
+        }
+    };
+}
+function disconnect_websocket() {
+    if (socket) {
+        socket.close();
+    }
+}
 function disconnect() {
     if (dc) {
         dc.close();
     }
-    pc.close();
-    socket.close();
-    show_connection_buttons();
-    log("disconnected");
+    if (pc_data) {
+        pc_data.close();
+    }
+    if (pc_camera) {
+        pc_camera.close();
+    }
+    disconnect_websocket();
+    console.log("disconnected");
 }
-function tryConnect() {
-    var user_input = document.getElementById("userName");
-    var target_input = document.getElementById("targetName");
-    username = user_input.value;
-    target = target_input.value;
-    if (username.length > 0 && target.length > 0) {
-        connect_socket(false);
-        hide_connection_buttons();
+function connectRobot() {
+    if (socked_opened) {
+        pc_data = create_data_pc();
+        pc_camera = create_camera_pc();
+        hide_rtc_div();
+        show_control();
+        show_disconnect();
     }
 }
-function tryConnectCamera() {
-    var user_input = document.getElementById("userName");
-    var target_input = document.getElementById("targetName");
-    username = user_input.value;
-    target = target_input.value;
-    if (username.length > 0 && target.length > 0) {
-        connect_socket(true);
-        hide_connection_buttons();
-    }
+function disconnectRobot() {
+    hide_control();
+    hide_rtc_div();
+    disconnect();
+    show_socket_div();
+    hide_disconnect();
 }
-function show_connection_buttons() {
-    var _a, _b, _c, _d, _e;
-    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.removeAttribute("hidden");
-    (_b = document.getElementById("cameraButton")) === null || _b === void 0 ? void 0 : _b.removeAttribute("hidden");
-    (_c = document.getElementById("stopButton")) === null || _c === void 0 ? void 0 : _c.setAttribute("hidden", "true");
-    (_d = document.getElementById("userName")) === null || _d === void 0 ? void 0 : _d.removeAttribute("hidden");
-    (_e = document.getElementById("targetName")) === null || _e === void 0 ? void 0 : _e.removeAttribute("hidden");
-}
-function hide_connection_buttons() {
-    var _a, _b, _c, _d, _e;
-    (_a = document.getElementById("startButton")) === null || _a === void 0 ? void 0 : _a.setAttribute("hidden", "true");
-    (_b = document.getElementById("cameraButton")) === null || _b === void 0 ? void 0 : _b.setAttribute("hidden", "true");
-    (_c = document.getElementById("stopButton")) === null || _c === void 0 ? void 0 : _c.removeAttribute("hidden");
-    (_d = document.getElementById("userName")) === null || _d === void 0 ? void 0 : _d.setAttribute("hidden", "true");
-    (_e = document.getElementById("targetName")) === null || _e === void 0 ? void 0 : _e.setAttribute("hidden", "true");
-}
-function connect_socket(camera) {
-    socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
-    socket.onmessage = function (e) {
-        var sdp = JSON.parse(e.data);
-        var sd = sdp.SessionDescription.description;
-        if (sd) {
-            remote_description = JSON.parse(sd);
-            if (remote_description) {
-                setRemoteDescription();
-            }
-            else {
-                log("remote description is null");
-            }
-        }
-        else {
-            log("description is null");
-        }
-    };
-    socket.onopen = function () {
-        log("websocket connected");
-        register_peer(username);
-        pc = create_pc(camera);
-        pc.oniceconnectionstatechange = function () {
-            log(pc.iceConnectionState);
-        };
-        pc.onicecandidate = function (e) {
-            if (e.candidate === null) {
-                var sdp = JSON.stringify(pc.localDescription);
-                var data = {
-                    "SessionDescription": {
-                        "sender": username,
-                        "description": sdp,
-                        "target": target,
-                        "kind": "Offer"
-                    }
-                };
-                socket.send(JSON.stringify(data));
-            }
-        };
-        pc.onnegotiationneeded = function (e) {
-            pc.createOffer().then(function (d) {
-                pc.setLocalDescription(d);
-            }).catch(log);
-        };
-    };
-}
-function register_peer(name) {
-    var registerMsg = { "Register": name };
+function register_peer(socket, name) {
+    let registerMsg = { "Register": name };
     socket.send(JSON.stringify(registerMsg));
 }
-function create_pc(camera) {
-    var pc = new RTCPeerConnection(iceServers);
-    if (camera) {
-        pc.addTransceiver('video', { 'direction': 'recvonly' });
-    }
-    else {
-        dc = create_data_channel(pc);
-    }
-    pc.oniceconnectionstatechange = function (e) {
-        log(pc.iceConnectionState);
+function get_peers_online(socket, name) {
+    let getPeerListMsg = { "GetPeerList": name };
+    socket.send(JSON.stringify(getPeerListMsg));
+}
+function create_camera_pc() {
+    let pc = new RTCPeerConnection(iceServers);
+    pc.addTransceiver('video', { 'direction': 'recvonly' });
+    pc.oniceconnectionstatechange = (e) => {
+        console.log(pc.iceConnectionState);
     };
-    pc.onicecandidate = function (e) {
+    pc.onicecandidate = (e) => {
         if (e.candidate === null) {
-            var sdp = JSON.stringify(pc.localDescription);
-            var data = {
+            let sdp = JSON.stringify(pc.localDescription);
+            let data = {
                 "SessionDescription": {
                     "sender": username,
                     "description": sdp,
-                    "target": target,
-                    "kind": "Offer"
+                    "target": camera_target,
+                    "kind": "Offer",
+                    "connection_type": "Video"
                 }
             };
             socket.send(JSON.stringify(data));
@@ -189,69 +221,88 @@ function create_pc(camera) {
     };
     pc.ontrack = function (e) {
         e.currentTarget;
-        log("track received");
-        var el = document.getElementById("remoteVideos");
+        console.log("track received");
+        let el = document.getElementById("myVideo");
         el.srcObject = e.streams[0];
         el.autoplay = true;
         el.controls = true;
     };
-    pc.onnegotiationneeded = function (e) {
-        pc.createOffer().then(function (d) {
+    pc.onnegotiationneeded = (e) => {
+        pc.createOffer().then((d) => {
             pc.setLocalDescription(d);
-        }).catch(log);
+        }).catch(console.log);
+    };
+    return pc;
+}
+function create_data_pc() {
+    let pc = new RTCPeerConnection(iceServers);
+    dc = create_data_channel(pc);
+    pc.oniceconnectionstatechange = (e) => {
+        console.log(pc.iceConnectionState);
+    };
+    pc.onicecandidate = (e) => {
+        if (e.candidate === null) {
+            let sdp = JSON.stringify(pc.localDescription);
+            let data = {
+                "SessionDescription": {
+                    "sender": username,
+                    "description": sdp,
+                    "target": robot_target,
+                    "kind": "Offer",
+                    "connection_type": "Data"
+                }
+            };
+            socket.send(JSON.stringify(data));
+        }
+    };
+    pc.onnegotiationneeded = (e) => {
+        pc.createOffer().then((d) => {
+            pc.setLocalDescription(d);
+        }).catch(console.log);
     };
     return pc;
 }
 function create_data_channel(pc) {
-    var dc = pc.createDataChannel('dataChannel');
-    log("datachannel created");
-    dc.onclose = function (e) {
-        log('datachannel closed');
+    let dc = pc.createDataChannel('dataChannel');
+    console.log("datachannel created");
+    dc.onclose = (e) => {
+        console.log('datachannel closed');
     };
-    dc.onopen = function (e) {
-        log('datachannel is open');
-        //let interval = Math.round(Math.random() * 10000);
-        //window.setInterval(() => {
-        //    if (dc.readyState === "open") {
-        //        let num = Math.round(Math.random() * 1000000000);
-        //        interval = Math.round(Math.random() * 10000);
-        //        log("<== " + num);
-        //        dc.send("" + num);
-        //    }
-        //}, interval);
+    dc.onopen = (e) => {
+        console.log('datachannel is open');
     };
-    dc.onmessage = function (e) {
-        var s = e.data.toString();
-        log("==> " + s);
+    dc.onmessage = (e) => {
+        let s = e.data.toString();
+        console.log("==> " + s);
     };
     return dc;
 }
-function setRemoteDescription() {
+function setRemoteDescription(pc) {
     if (remote_description) {
         try {
             pc.setRemoteDescription(remote_description);
-            log("remote description set");
+            console.log("remote description set");
         }
         catch (_a) {
-            log("failed to set remote description");
+            console.log("failed to set remote description");
         }
     }
     else {
-        log("remote description is not set");
+        console.log("remote description is not set");
     }
 }
 function move(dir) {
     if (dc.readyState == "open") {
-        log("<== " + dir);
+        console.log("<== " + dir);
         dc.send(dir);
     }
 }
 function log(msg) {
-    var logArea = document.getElementById("messages");
-    var node_num = logArea.childElementCount;
+    let logArea = document.getElementById("messages");
+    let node_num = logArea.childElementCount;
     console.log(msg);
     if (logArea) {
-        var a = document.createElement("a");
+        let a = document.createElement("a");
         logArea.insertBefore(a, logArea.firstElementChild);
         a.classList.add("row");
         a.textContent = msg;
@@ -260,12 +311,15 @@ function log(msg) {
         console.log("log area is not found");
     }
     if (node_num >= 6) {
-        for (var i = 6; i < node_num; i++) {
+        for (let i = 6; i < node_num; i++) {
             logArea.children[i].remove();
         }
     }
 }
-var iceServers = {
+function preventContextMenu(event) {
+    event.preventDefault();
+}
+let iceServers = {
     "iceServers": [
         {
             "urls": [

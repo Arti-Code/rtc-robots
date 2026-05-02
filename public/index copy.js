@@ -1,14 +1,16 @@
-let pc_camera: RTCPeerConnection;
+"use strict";
+/* let pc_camera: RTCPeerConnection;
 let pc_data: RTCPeerConnection;
 let dc: RTCDataChannel;
+let socket_camera: WebSocket;
+let socket_data: WebSocket;
 let socket: WebSocket;
-let username: string = "ARTURO";
+let username1: string = "ARTURO";
 let robot_target: string = "ROBOT";
 let camera_target: string = "CAMERA";
 let remote_description: RTCSessionDescription;
 let input_box = document.getElementById("inputBox") as HTMLDivElement;
-let socked_opened = false;
-let timer = 0.0;
+let registered: boolean = false;
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
 
 
@@ -60,104 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
    
-function hide_socket_div() {
-    let websocket_section = document.getElementById("websocket_section") as HTMLDivElement;
-    if (websocket_section) {
-        websocket_section.hidden = true;
-    }
-}
 
-function show_socket_div() {
-    let websocket_section = document.getElementById("websocket_section") as HTMLDivElement;
-    if (websocket_section) {
-        websocket_section.hidden = false;
-    }
-}
-
-function show_rtc_div() {
-    let rtc_section = document.getElementById("rtc_section") as HTMLDivElement;
-    if (rtc_section) {
-        rtc_section.hidden = false;
-    }   
-}
-
-function hide_rtc_div() {
-    let rtc_section = document.getElementById("rtc_section") as HTMLDivElement;
-    if (rtc_section) {
-        rtc_section.hidden = true;
-    }
-}
-
-function show_control() {
-    let control_section = document.getElementById("control_section") as HTMLDivElement;
-    if (control_section) {
-        control_section.hidden = false;
-    }
-}
-
-function hide_control() {
-    let control_section = document.getElementById("control_section") as HTMLDivElement;
-    if (control_section) {
-        control_section.hidden = true;
-    }
-}
-function show_disconnect() {
-    let close_section = document.getElementById("close_control_div") as HTMLDivElement;
-    if (close_section) {
-        close_section.hidden = false;
-    }
-}
-
-function hide_disconnect() {
-    let close_section = document.getElementById("close_control_div") as HTMLDivElement;
-    if (close_section) {
-        close_section.hidden = true;
-    }
-}
-
-function connectWebsocket() {
+function connect_websocket() {
     socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
-    //socket = new WebSocket("ws://127.0.0.1:8080");
-    let user_input = document.getElementById("userName") as HTMLInputElement;
-    username = user_input.value;
-    let socketButton = document.getElementById("socketButton") as HTMLButtonElement;
-    if (socketButton) {
-        socketButton.textContent = "Connecting...";
-    }
-    socket.onmessage = (e) => {
-        let sdp = JSON.parse(e.data);
-        let sd = sdp.SessionDescription.description;
-        let conn_type = sdp.SessionDescription.connection_type;
-        if (sd) {
-            remote_description = JSON.parse(sd);
-            if (remote_description) {
-                console.log("connection type: " + conn_type);
-                if (conn_type == "Video") {
-                    setRemoteDescription(pc_camera);
-                } else if (conn_type == "Data") {
-                    setRemoteDescription(pc_data);
-                }
-            } else {
-                console.log("remote description is null");
-            }
-        } else {
-            console.log("description is null");
-        }
-    }
-
-    socket.onopen = () => {
-        //log("websocket connected");
-        register_peer(socket, username);
-        get_peers_online(socket, username);
-        socked_opened = true;
-        hide_socket_div();
-        show_rtc_div();
-        console.log("Websocket connected");
-        let socketButton = document.getElementById("socketButton") as HTMLButtonElement;
-        if (socketButton) {
-            socketButton.textContent = "Connect Signaling";
-        }
-    };
 }
 
 function disconnect_websocket() {
@@ -168,26 +75,101 @@ function disconnect() {
     if (dc) { dc.close(); }
     if (pc_data) { pc_data.close(); }
     if (pc_camera) { pc_camera.close(); }
-    disconnect_websocket();
-    console.log("disconnected");
+    if (socket_camera) { socket_camera.close(); }
+    if (socket_data) { socket_data.close(); }
+    registered = false;
+    show_connection_buttons();
+    log("disconnected");
 }
 
-function connectRobot() {
-    if (socked_opened) {
-        pc_data = create_data_pc();
-        pc_camera = create_camera_pc();
-        hide_rtc_div();
-        show_control();
-        show_disconnect();
+function tryConnect() {
+    let user_input = document.getElementById("user1Name") as HTMLInputElement;
+    let target_input = document.getElementById("robotTarget") as HTMLInputElement;
+    username = user_input.value;
+    robot_target = target_input.value;
+    if (username.length > 0 && robot_target.length > 0) {
+        connect_socket(false, true);
+        hide_connection_buttons()
     }
 }
 
-function disconnectRobot() {
-    hide_control();
-    hide_rtc_div()
-    disconnect();
-    show_socket_div();
-    hide_disconnect();
+function tryConnectCamera() {
+    let user_input = document.getElementById("user1Name") as HTMLInputElement;
+    let camera_input = document.getElementById("cameraTarget") as HTMLInputElement;
+    username = user_input.value;
+    camera_target = camera_input.value;
+    if (username.length > 0 && camera_target.length > 0) {
+        connect_socket(true, false);
+        hide_connection_buttons()
+    } else {
+        log("username or camera target is empty");
+    }
+}
+
+function show_connection_buttons() {
+    document.getElementById("startButton")?.removeAttribute("hidden");
+    document.getElementById("cameraButton")?.removeAttribute("hidden");
+    document.getElementById("stopButton")?.setAttribute("hidden", "true");
+    document.getElementById("user1Name")?.removeAttribute("hidden");
+    document.getElementById("user2Name")?.removeAttribute("hidden");
+    document.getElementById("robotTarget")?.removeAttribute("hidden");
+    document.getElementById("cameraTarget")?.removeAttribute("hidden");
+}
+
+function hide_connection_buttons() {
+    //document.getElementById("startButton")?.setAttribute("hidden", "true");
+    //document.getElementById("cameraButton")?.setAttribute("hidden", "true");
+    document.getElementById("stopButton")?.removeAttribute("hidden");
+    //document.getElementById("user1Name")?.setAttribute("hidden", "true");
+    //document.getElementById("user2Name")?.setAttribute("hidden", "true");
+    //document.getElementById("robotTarget")?.setAttribute("hidden", "true");
+    //document.getElementById("cameraTarget")?.setAttribute("hidden", "true");
+}
+
+function connect_socket(camera: boolean, data: boolean) {
+    let socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
+
+    socket.onmessage = (e) => {
+        let sdp = JSON.parse(e.data);
+        let sd = sdp.SessionDescription.description;
+        if (sd) {
+            remote_description = JSON.parse(sd);
+            if (remote_description) {
+                if (camera) {
+                    setRemoteDescription(pc_camera);
+                } else if (data) {
+                    setRemoteDescription(pc_data);
+                }
+            } else {
+                log("remote description is null");
+            }
+        } else {
+            log("description is null");
+        }
+    }
+
+    socket.onopen = () => {
+        log("websocket connected");
+        if (!registered) {
+            register_peer(socket, username);
+            registered = true;
+        }
+        if (camera) {
+            //register_peer(socket, username2);
+            pc_camera = create_camera_pc();
+        }
+        if (data) {
+            //register_peer(socket, username1);
+            pc_data = create_data_pc();
+        }
+    };
+
+    if (camera) {
+        socket_camera = socket;
+    }
+    if (data) {
+        socket_data = socket;
+    }
 }
 
 function register_peer(socket: WebSocket, name: string) {
@@ -195,40 +177,34 @@ function register_peer(socket: WebSocket, name: string) {
   socket.send(JSON.stringify(registerMsg));
 }
 
-function get_peers_online(socket: WebSocket, name: string) {
-  let getPeerListMsg = { "GetPeerList": name };
-  socket.send(JSON.stringify(getPeerListMsg));
-}
-
 function create_camera_pc(): RTCPeerConnection {
     let pc = new RTCPeerConnection(iceServers);
     pc.addTransceiver('video', {'direction': 'recvonly'});
 
     pc.oniceconnectionstatechange = (e) => {
-        console.log(pc.iceConnectionState);
+        log(pc.iceConnectionState);
     };
 
     pc.onicecandidate = (e) => {
         if (e.candidate === null) {
             let sdp = JSON.stringify(pc.localDescription);
             let data = {
-                "SessionDescription": 
+                "SessionDescription":
                 {
-                    "sender": username, 
-                    "description": sdp, 
-                    "target": camera_target, 
-                    "kind": "Offer",
-                    "connection_type": "Video"
+                    "sender": username,
+                    "description": sdp,
+                    "target": camera_target,
+                    "kind": "Offer"
                 }
             };
-            socket.send(JSON.stringify(data));
+            socket_camera.send(JSON.stringify(data));
         }
     };
 
     pc.ontrack = function (e) {
         e.currentTarget
-        console.log("track received");
-        let el = document.getElementById("myVideo") as HTMLVideoElement;
+        log("track received");
+        let el = document.getElementById("remoteVideos") as HTMLVideoElement;
         el.srcObject = e.streams[0];
         el.autoplay = true;
         el.controls = true;
@@ -237,7 +213,7 @@ function create_camera_pc(): RTCPeerConnection {
     pc.onnegotiationneeded = (e) => {
         pc.createOffer().then((d) => {
             pc.setLocalDescription(d);
-        }).catch(console.log);
+        }).catch(log);
     }
     return pc;
 }
@@ -247,49 +223,57 @@ function create_data_pc(): RTCPeerConnection {
     dc = create_data_channel(pc);
 
     pc.oniceconnectionstatechange = (e) => {
-        console.log(pc.iceConnectionState);
+        log(pc.iceConnectionState);
     };
 
     pc.onicecandidate = (e) => {
         if (e.candidate === null) {
             let sdp = JSON.stringify(pc.localDescription);
             let data = {
-                "SessionDescription": 
+                "SessionDescription":
                 {
-                    "sender": username, 
-                    "description": sdp, 
-                    "target": robot_target, 
-                    "kind": "Offer",
-                    "connection_type": "Data"
+                    "sender": username,
+                    "description": sdp,
+                    "target": robot_target,
+                    "kind": "Offer"
                 }
             };
-            socket.send(JSON.stringify(data));
+            socket_data.send(JSON.stringify(data));
         }
     };
 
     pc.onnegotiationneeded = (e) => {
         pc.createOffer().then((d) => {
             pc.setLocalDescription(d);
-        }).catch(console.log);
+        }).catch(log);
     };
     return pc;
 }
 
 function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
     let dc = pc.createDataChannel('dataChannel');
-    console.log("datachannel created");
+    log("datachannel created");
 
     dc.onclose = (e) => {
-        console.log('datachannel closed');
+        log('datachannel closed');
     }
 
     dc.onopen = (e) => {
-        console.log('datachannel is open');
+        log('datachannel is open');
+        //let interval = Math.round(Math.random() * 10000);
+        //window.setInterval(() => {
+        //    if (dc.readyState === "open") {
+        //        let num = Math.round(Math.random() * 1000000000);
+        //        interval = Math.round(Math.random() * 10000);
+        //        log("<== " + num);
+        //        dc.send("" + num);
+        //    }
+        //}, interval);
     }
 
     dc.onmessage = (e) => {
         let s: string = e.data.toString();
-        console.log("==> " + s);
+        log("==> " + s);
     }
 
     return dc;
@@ -300,19 +284,19 @@ function setRemoteDescription(pc: RTCPeerConnection) {
     if (remote_description) {
         try {
             pc.setRemoteDescription(remote_description);
-            console.log("remote description set");
+            log("remote description set");
         }
         catch {
-            console.log("failed to set remote description");
+            log("failed to set remote description");
         }
     } else {
-        console.log("remote description is not set");
+        log("remote description is not set");
     }
 }
 
 function move(dir: string) {
     if (dc.readyState == "open") {
-        console.log("<== " + dir);
+        log("<== " + dir);
         dc.send(dir);
     }
 }
@@ -336,13 +320,11 @@ function log(msg: any) {
     }
 }
 
-function preventContextMenu(event: MouseEvent) {
-    event.preventDefault();
-}
+
 
 let iceServers = {
     "iceServers": [
-        { 
+        {
             "urls": [
                 "stun:fr-turn8.xirsys.com",
             ]
@@ -351,7 +333,7 @@ let iceServers = {
             "urls": [
                 "stun:stun.l.google.com:19302"
             ]
-        }, 
+        },
         {
             "username": "xrlEivlkdTCQvwPYbCRHDur872L9CNM7DlbAya3tEhbBcn7zMgFFN8q43pP_2v-4AAAAAGmxwT1nd296ZHlr",
             "credential": "d05d03e4-1d7f-11f1-b1bb-be96737d4d7e",
@@ -359,10 +341,10 @@ let iceServers = {
                 "turn:fr-turn8.xirsys.com:80?transport=udp",
                 "turn:fr-turn8.xirsys.com:3478?transport=udp",
                 "turn:fr-turn8.xirsys.com:80?transport=tcp",
-                "turn:fr-turn8.xirsys.com:3478?transport=tcp", 
+                "turn:fr-turn8.xirsys.com:3478?transport=tcp",
                 "turns:fr-turn8.xirsys.com:443?transport=tcp",
                 "turns:fr-turn8.xirsys.com:5349?transport=tcp"
             ]
         }
     ]
-}
+} */ 

@@ -1,62 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebRTC Robotics</title>
-    <script src="index.js"></script>
-    <link rel="icon" type="image/x-icon" href="./favicon.png">
-    <link rel="stylesheet" href="style.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>RTC Robot</title>
+        <script src="index.js"></script>
+        <link rel="icon" type="image/x-icon" href="./favicon.png">
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+
 <body>
-        <!-- <div class="logo">
-                <img src="./title.png" height="96">
-        </div> -->
+        <video autoplay muted loop id="myVideo">
+                <!-- <source src="rain.mp4" type="video/mp4"> -->
+        </video>
+        <div class="content">
+        <div id="control_section" class="" hidden>
+                <div class="new_control">
+                        <div class="column">
+                                <div id="rightButton" , class="cell"
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('RIGHT')"
+                                        onmouseup="move('STOP')">
+                                        <img src="./arrow_left.png" width="80">
+                                </div>
+
+                                <div id="leftButton" , class="cell" 
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('LEFT')" 
+                                        onmouseup="move('STOP')">
+                                        <img src="./arrow_right.png" width="80">
+                                </div>
+                        </div>
+                        <div class="column">
+                                <!-- <video id="remoteVideos" class="video"></video> -->
+                        </div>
+                        <div class="column">
+                                <div id="moveButton" , class="cell" 
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('MOVE')" 
+                                        onmouseup="move('STOP')">
+                                        <img src="./arrow_move.png" width="80">
+                                </div>
+
+                                <div id="backButton" , class="cell" 
+                                        oncontextmenu="preventContextMenu(event)" 
+                                        onmousedown="move('BACK')" 
+                                        onmouseup="move('STOP')">
+                                        <img src="./arrow_back.png" width="80">
+                                </div>
+                        </div>
+                </div>
+        </div>
 
         <div class="container">
                 <div class="container_row">
-                        <img src="./robot.png" height="96">
-                        <button id="startButton" class="button btn_connect" onclick="tryConnect()">Connect</button>
-                        <button id="cameraButton" class="button btn_connect" onclick="tryConnectCamera()">Camera</button>
-                        <button id="stopButton" class="button btn_disconnect" onclick="disconnect()" hidden>Disconnect</button>
+                        <img src="./robot.png" width="48" height="48">
                 </div>
         </div>
 
-        <div class="container" id="inputBox">
+        <div id="websocket_section">
+                <div class="container">
+                        <!-- <div class="container_row"> -->
+                        <input type="text" id="userName" value="ARTURO">
+                        <button id="socketButton" class="button btn_connect" onclick="connectWebsocket()">
+                                SIGNALING
+                        </button>
+                        <!-- <button class="btn"><i class="fa-solid fa-link"></i></button> -->
+                        <!-- </div> -->
+                </div>
+        </div>
+
+        <div id="rtc_section" hidden>
+                <div class="container">
+                        <div class="container_row">
+                                <input type="text" id="robotTarget" value="ROBOT">
+                                <input type="text" id="cameraTarget" value="CAMERA">
+                        </div>
+                        <div class="container_row">
+                                <button id="startButton" class="button btn_connect" onclick="connectRobot()">
+                                        CONNECT
+                                </button>
+                        </div>
+                </div>
+        </div>
+
+        <div id="close_control_div" hidden>
+                <div class="container">
+                        <div class="container_row">
+                                <button id="disconnectButton" class="button btn_connect" onclick="disconnectRobot()">
+                                        DISCONNECT
+                                </button>
+                        </div>
+                </div>
+        </div>
+
+        <div class="container_log" id="messages" hidden>
                 <div class="container_row">
-                        <input type="text" id="userName" value="ARTUR">
-                        <input type="text" id="targetName" value="ROBOT">
+                        <p id="log"></p>
                 </div>
         </div>
-        
-        <div class="container">
-
-                <div class="column">
-                        <div id="rightButton", class="cell" onclick="move('RIGHT')">
-                                <img src="./arrow_right.png" width="72">
-                        </div>
-                        <div id="leftButton", class="cell" onclick="move('LEFT')">
-                                <img src="./arrow_left.png" width="72">
-                        </div>
-                </div>
-        
-        
-                <div class="column">
-                        <video id="remoteVideos" class="video"></video>
-                </div>
-        
-                <div class="column">
-                        <div id="moveButton", class="cell"> <!--  onclick="move('MOVE')"> -->
-                                <img src="./arrow_move.png" width="72">
-                        </div>
-                        <div id="backButton", class="cell" onclick="move('BACK')">
-                                <img src="./arrow_back.png" width="72">
-                        </div>
-                </div>
-
         </div>
-
-    <div class="container_log" id="messages">
-    </div>
 </body>
+
 </html>
