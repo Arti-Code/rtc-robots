@@ -151,6 +151,13 @@ body {
     background-color: rgb(39, 42, 46);
 }
 
+a {
+    display: flex;
+    background-color: rgba(39, 42, 46, 0.0);
+    color: whitesmoke;
+    font-size: large;
+}
+
 button {
     display: flex;
     background-color: rgba(39, 42, 46, 0.0);

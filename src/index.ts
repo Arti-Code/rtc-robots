@@ -1,3 +1,5 @@
+
+
 let pc_camera: RTCPeerConnection;
 let pc_data: RTCPeerConnection;
 let dc: RTCDataChannel;
@@ -9,10 +11,11 @@ let remote_description: RTCSessionDescription;
 let input_box = document.getElementById("inputBox") as HTMLDivElement;
 let socked_opened = false;
 let timer = 0.0;
+let command: string = "STOP";
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
 
 
-document.addEventListener('DOMContentLoaded', () => {
+/* document.addEventListener('DOMContentLoaded', () => {
     console.log("init loader");
     const move_button = document.getElementById('moveButton');
     if (move_button) {
@@ -58,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error("Element with ID 'leftButton' not found.");
     }
-});
+}); */
    
 function hide_socket_div() {
     let websocket_section = document.getElementById("websocket_section") as HTMLDivElement;
@@ -120,10 +123,6 @@ function connectWebsocket() {
     //socket = new WebSocket("ws://127.0.0.1:8080");
     let user_input = document.getElementById("userName") as HTMLInputElement;
     username = user_input.value;
-    let socketButton = document.getElementById("socketButton") as HTMLButtonElement;
-    if (socketButton) {
-        socketButton.textContent = "Connecting...";
-    }
     socket.onmessage = (e) => {
         let sdp = JSON.parse(e.data);
         let sd = sdp.SessionDescription.description;
@@ -146,17 +145,12 @@ function connectWebsocket() {
     }
 
     socket.onopen = () => {
-        //log("websocket connected");
         register_peer(socket, username);
         get_peers_online(socket, username);
         socked_opened = true;
         hide_socket_div();
         show_rtc_div();
         console.log("Websocket connected");
-        let socketButton = document.getElementById("socketButton") as HTMLButtonElement;
-        if (socketButton) {
-            socketButton.textContent = "Connect Signaling";
-        }
     };
 }
 
@@ -183,6 +177,7 @@ function connectRobot() {
 }
 
 function disconnectRobot() {
+    clean_terminal();
     hide_control();
     hide_rtc_div()
     disconnect();
@@ -285,11 +280,17 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
 
     dc.onopen = (e) => {
         console.log('datachannel is open');
+        setInterval(autocommander, 500);
     }
 
     dc.onmessage = (e) => {
-        let s: string = e.data.toString();
-        console.log("==> " + s);
+        if (e.data instanceof ArrayBuffer) {
+            let decoder = new TextDecoder();
+            let s = decoder.decode(e.data);
+            log("==> " + s);
+        } else {
+            log("==> " + e.data.toString());
+        }
     }
 
     return dc;
@@ -312,12 +313,20 @@ function setRemoteDescription(pc: RTCPeerConnection) {
 
 function move(dir: string) {
     if (dc.readyState == "open") {
+        command = dir;
         console.log("<== " + dir);
         dc.send(dir);
     }
 }
 
-function log(msg: any) {
+function clean_terminal() {
+    let logArea = document.getElementById("messages") as HTMLDivElement;
+    if (logArea) {
+        logArea.innerHTML = "";
+    }
+}
+
+function log(msg: string) {
     let logArea = document.getElementById("messages") as HTMLDivElement;
     let node_num = logArea.childElementCount;
     console.log(msg);
@@ -365,4 +374,11 @@ let iceServers = {
             ]
         }
     ]
+}
+
+
+function autocommander() {
+    if (dc.readyState === "open") {
+        dc.send(command);
+    }
 }

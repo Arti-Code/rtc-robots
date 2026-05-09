@@ -12,9 +12,7 @@
 </head>
 
 <body>
-        <video autoplay muted loop id="myVideo">
-                <!-- <source src="rain.mp4" type="video/mp4"> -->
-        </video>
+        <video autoplay muted loop id="myVideo"></video>
         <div class="content">
         <div id="control_section" class="" hidden>
                 <div class="new_control">
@@ -34,7 +32,6 @@
                                 </div>
                         </div>
                         <div class="column">
-                                <!-- <video id="remoteVideos" class="video"></video> -->
                         </div>
                         <div class="column">
                                 <div id="moveButton" , class="cell" 
@@ -54,21 +51,12 @@
                 </div>
         </div>
 
-        <div class="container">
-                <div class="container_row">
-                        <img src="./robot.png" width="48" height="48">
-                </div>
-        </div>
-
         <div id="websocket_section">
                 <div class="container">
-                        <!-- <div class="container_row"> -->
                         <input type="text" id="userName" value="ARTURO">
                         <button id="socketButton" class="button btn_connect" onclick="connectWebsocket()">
-                                SIGNALING
+                                <img src="./assets/link-green.png" width="64">
                         </button>
-                        <!-- <button class="btn"><i class="fa-solid fa-link"></i></button> -->
-                        <!-- </div> -->
                 </div>
         </div>
 
@@ -80,7 +68,7 @@
                         </div>
                         <div class="container_row">
                                 <button id="startButton" class="button btn_connect" onclick="connectRobot()">
-                                        CONNECT
+                                        <img src="./assets/link-green.png" width="64">
                                 </button>
                         </div>
                 </div>
@@ -89,8 +77,8 @@
         <div id="close_control_div" hidden>
                 <div class="container">
                         <div class="container_row">
-                                <button id="disconnectButton" class="button btn_connect" onclick="disconnectRobot()">
-                                        DISCONNECT
+                                <button id="disconnectButton" class="button btn_disconnect" onclick="disconnectRobot()">
+                                        <img src="./assets/link-orange.png" width="64">
                                 </button>
                         </div>
                 </div>
