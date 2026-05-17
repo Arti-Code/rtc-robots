@@ -67,6 +67,9 @@
                                 <input type="text" id="cameraTarget" value="CAMERA">
                         </div>
                         <div class="container_row">
+                                <button id="startButton" class="button btn_connect" onclick="connectRobotSolo()">
+                                        <img src="./assets/robot.png" width="64">
+                                </button>
                                 <button id="startButton" class="button btn_connect" onclick="connectRobot()">
                                         <img src="./assets/link-green.png" width="64">
                                 </button>
@@ -89,6 +92,14 @@
                         <p id="log"></p>
                 </div>
         </div>
+        </div>
+
+        <div id="peer_list_div" hidden>
+                <div class="container">
+                       <ul id="peerList">
+                        
+                       </ul> 
+                </div>
         </div>
 </body>
 

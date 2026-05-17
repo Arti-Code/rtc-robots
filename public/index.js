@@ -108,32 +108,36 @@ function hide_disconnect() {
     }
 }
 function connectWebsocket() {
-    socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
-    //socket = new WebSocket("ws://127.0.0.1:8080");
+    //socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
+    socket = new WebSocket("ws://127.0.0.1:8080");
     let user_input = document.getElementById("userName");
     username = user_input.value;
     socket.onmessage = (e) => {
-        let sdp = JSON.parse(e.data);
-        let sd = sdp.SessionDescription.description;
-        let conn_type = sdp.SessionDescription.connection_type;
+        let message = JSON.parse(e.data);
+        if (message.PeerList) {
+            update_peer_list(message.PeerList);
+            show_peer_list();
+        }
+        if (message.SessionDescription) {
+            session_description(message);
+        }
+        /* let sd = message.SessionDescription.description;
+        let conn_type = message.SessionDescription.connection_type;
         if (sd) {
             remote_description = JSON.parse(sd);
             if (remote_description) {
                 console.log("connection type: " + conn_type);
                 if (conn_type == "Video") {
                     setRemoteDescription(pc_camera);
-                }
-                else if (conn_type == "Data") {
+                } else if (conn_type == "Data") {
                     setRemoteDescription(pc_data);
                 }
-            }
-            else {
+            } else {
                 console.log("remote description is null");
             }
-        }
-        else {
+        } else {
             console.log("description is null");
-        }
+        } */
     };
     socket.onopen = () => {
         register_peer(socket, username);
@@ -163,9 +167,30 @@ function disconnect() {
     console.log("disconnected");
 }
 function connectRobot() {
+    let robot_input = document.getElementById("robotTarget");
+    let camera_input = document.getElementById("cameraTarget");
+    if (robot_input) {
+        robot_target = robot_input.value;
+    }
+    if (camera_input) {
+        camera_target = robot_input.value;
+    }
     if (socked_opened) {
         pc_data = create_data_pc();
         pc_camera = create_camera_pc();
+        hide_rtc_div();
+        show_control();
+        show_disconnect();
+    }
+}
+function connectRobotSolo() {
+    let robot_input = document.getElementById("robotTarget");
+    if (robot_input) {
+        robot_target = robot_input.value;
+    }
+    if (socked_opened) {
+        pc_data = create_data_pc();
+        //pc_camera = create_camera_pc();
         hide_rtc_div();
         show_control();
         show_disconnect();
@@ -178,6 +203,28 @@ function disconnectRobot() {
     disconnect();
     show_socket_div();
     hide_disconnect();
+}
+function session_description(data) {
+    let message = data.SessionDescription.description;
+    let conn_type = data.SessionDescription.connection_type;
+    if (message) {
+        remote_description = JSON.parse(message);
+        if (remote_description) {
+            console.log("connection type: " + conn_type);
+            if (conn_type == "Video") {
+                setRemoteDescription(pc_camera);
+            }
+            else if (conn_type == "Data") {
+                setRemoteDescription(pc_data);
+            }
+        }
+        else {
+            console.log("remote description is null");
+        }
+    }
+    else {
+        console.log("description is null");
+    }
 }
 function register_peer(socket, name) {
     let registerMsg = { "Register": name };
@@ -243,6 +290,14 @@ function create_data_pc() {
             };
             socket.send(JSON.stringify(data));
         }
+    };
+    pc.ontrack = function (e) {
+        e.currentTarget;
+        console.log("track received");
+        let el = document.getElementById("myVideo");
+        el.srcObject = e.streams[0];
+        el.autoplay = true;
+        el.controls = false;
     };
     pc.onnegotiationneeded = (e) => {
         pc.createOffer().then((d) => {
@@ -322,6 +377,37 @@ function log(msg) {
 function preventContextMenu(event) {
     event.preventDefault();
 }
+function show_peer_list() {
+    let peer_list_div = document.getElementById("peer_list_div");
+    if (peer_list_div) {
+        peer_list_div.hidden = false;
+    }
+}
+function hide_peer_list() {
+    let peer_list_div = document.getElementById("peer_list_div");
+    if (peer_list_div) {
+        peer_list_div.hidden = true;
+    }
+}
+function update_peer_list(peers) {
+    let peerList = document.getElementById("peerList");
+    if (peerList) {
+        peerList.innerHTML = "";
+        peers.forEach(peer => {
+            let li = document.createElement("li");
+            let peer_button = document.createElement("button");
+            peer_button.classList = "button_peer";
+            peer_button.textContent = peer;
+            li.appendChild(peer_button);
+            peerList.appendChild(li);
+        });
+    }
+}
+function autocommander() {
+    if (dc.readyState === "open") {
+        dc.send(command);
+    }
+}
 let iceServers = {
     "iceServers": [
         {
@@ -348,8 +434,3 @@ let iceServers = {
         }
     ]
 };
-function autocommander() {
-    if (dc.readyState === "open") {
-        dc.send(command);
-    }
-}
