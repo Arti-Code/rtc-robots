@@ -116,8 +116,8 @@ function hide_disconnect() {
 }
 
 function connectWebsocket() {
-    socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
-    //socket = new WebSocket("ws://127.0.0.1:8080");
+    //socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
+    socket = new WebSocket("ws://127.0.0.1:8080");
     let user_input = document.getElementById("userName") as HTMLInputElement;
     username = user_input.value;
     let socketButton = document.getElementById("socketButton") as HTMLButtonElement;
