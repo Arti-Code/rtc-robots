@@ -1,4 +1,6 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const servers_1 = require("./servers");
 let pc_camera;
 let pc_data;
 let dc;
@@ -11,54 +13,6 @@ let input_box = document.getElementById("inputBox");
 let socked_opened = false;
 let timer = 0.0;
 let command = "STOP";
-//let move_btn = document.getElementById("moveButton") as HTMLDivElement;
-/* document.addEventListener('DOMContentLoaded', () => {
-    console.log("init loader");
-    const move_button = document.getElementById('moveButton');
-    if (move_button) {
-        move_button.ontouchend = function(event) {
-            move("STOP");
-        };
-        move_button.ontouchstart = function(event) {
-            move("MOVE");
-        };
-    } else {
-        console.error("Element with ID 'moveButton' not found.");
-    }
-    const back_button = document.getElementById('backButton');
-    if (back_button) {
-        back_button.ontouchend = function(event) {
-            move("STOP");
-        };
-        back_button.ontouchstart = function(event) {
-            move("BACK");
-        };
-    } else {
-        console.error("Element with ID 'backButton' not found.");
-    }
-    const right_button = document.getElementById('rightButton');
-    if (right_button) {
-        right_button.ontouchend = function(event) {
-            move("STOP");
-        };
-        right_button.ontouchstart = function(event) {
-            move("RIGHT");
-        };
-    } else {
-        console.error("Element with ID 'rightButton' not found.");
-    }
-    const left_button = document.getElementById('leftButton');
-    if (left_button) {
-        left_button.ontouchend = function(event) {
-            move("STOP");
-        };
-        left_button.ontouchstart = function(event) {
-            move("LEFT");
-        };
-    } else {
-        console.error("Element with ID 'leftButton' not found.");
-    }
-}); */
 function hide_socket_div() {
     let websocket_section = document.getElementById("websocket_section");
     if (websocket_section) {
@@ -235,7 +189,7 @@ function get_peers_online(socket, name) {
     socket.send(JSON.stringify(getPeerListMsg));
 }
 function create_camera_pc() {
-    let pc = new RTCPeerConnection(iceServers);
+    let pc = new RTCPeerConnection(servers_1.iceServers);
     pc.addTransceiver('video', { 'direction': 'recvonly' });
     pc.oniceconnectionstatechange = (e) => {
         console.log(pc.iceConnectionState);
@@ -271,7 +225,7 @@ function create_camera_pc() {
     return pc;
 }
 function create_data_pc() {
-    let pc = new RTCPeerConnection(iceServers);
+    let pc = new RTCPeerConnection(servers_1.iceServers);
     dc = create_data_channel(pc);
     pc.oniceconnectionstatechange = (e) => {
         console.log(pc.iceConnectionState);
@@ -408,29 +362,3 @@ function autocommander() {
         dc.send(command);
     }
 }
-let iceServers = {
-    "iceServers": [
-        {
-            "urls": [
-                "stun:fr-turn8.xirsys.com",
-            ]
-        },
-        {
-            "urls": [
-                "stun:stun.l.google.com:19302"
-            ]
-        },
-        {
-            "username": "xrlEivlkdTCQvwPYbCRHDur872L9CNM7DlbAya3tEhbBcn7zMgFFN8q43pP_2v-4AAAAAGmxwT1nd296ZHlr",
-            "credential": "d05d03e4-1d7f-11f1-b1bb-be96737d4d7e",
-            "urls": [
-                "turn:fr-turn8.xirsys.com:80?transport=udp",
-                "turn:fr-turn8.xirsys.com:3478?transport=udp",
-                "turn:fr-turn8.xirsys.com:80?transport=tcp",
-                "turn:fr-turn8.xirsys.com:3478?transport=tcp",
-                "turns:fr-turn8.xirsys.com:443?transport=tcp",
-                "turns:fr-turn8.xirsys.com:5349?transport=tcp"
-            ]
-        }
-    ]
-};
