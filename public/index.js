@@ -1,10 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const servers_1 = require("./servers");
+import iceServers from "./servers";
+import * as show from "./show";
+import * as signal from "./signal";
 let pc_camera;
 let pc_data;
 let dc;
-let socket;
+let client;
 let username = "ARTURO";
 let robot_target = "ROBOT";
 let camera_target = "CAMERA";
@@ -13,98 +13,34 @@ let input_box = document.getElementById("inputBox");
 let socked_opened = false;
 let timer = 0.0;
 let command = "STOP";
-function hide_socket_div() {
-    let websocket_section = document.getElementById("websocket_section");
-    if (websocket_section) {
-        websocket_section.hidden = true;
-    }
-}
-function show_socket_div() {
-    let websocket_section = document.getElementById("websocket_section");
-    if (websocket_section) {
-        websocket_section.hidden = false;
-    }
-}
-function show_rtc_div() {
-    let rtc_section = document.getElementById("rtc_section");
-    if (rtc_section) {
-        rtc_section.hidden = false;
-    }
-}
-function hide_rtc_div() {
-    let rtc_section = document.getElementById("rtc_section");
-    if (rtc_section) {
-        rtc_section.hidden = true;
-    }
-}
-function show_control() {
-    let control_section = document.getElementById("control_section");
-    if (control_section) {
-        control_section.hidden = false;
-    }
-}
-function hide_control() {
-    let control_section = document.getElementById("control_section");
-    if (control_section) {
-        control_section.hidden = true;
-    }
-}
-function show_disconnect() {
-    let close_section = document.getElementById("close_control_div");
-    if (close_section) {
-        close_section.hidden = false;
-    }
-}
-function hide_disconnect() {
-    let close_section = document.getElementById("close_control_div");
-    if (close_section) {
-        close_section.hidden = true;
-    }
-}
 function connectWebsocket() {
     //socket = new WebSocket("wss://ws2-production-fbbf.up.railway.app");
-    socket = new WebSocket("ws://127.0.0.1:8080");
+    //socket = new WebSocket("ws://127.0.0.1:8080");
+    client = signal.connect("ws://127.0.0.1:8080");
     let user_input = document.getElementById("userName");
     username = user_input.value;
-    socket.onmessage = (e) => {
+    client.onmessage = (e) => {
         let message = JSON.parse(e.data);
         if (message.PeerList) {
             update_peer_list(message.PeerList);
-            show_peer_list();
+            show.show_peer_list();
         }
         if (message.SessionDescription) {
             session_description(message);
         }
-        /* let sd = message.SessionDescription.description;
-        let conn_type = message.SessionDescription.connection_type;
-        if (sd) {
-            remote_description = JSON.parse(sd);
-            if (remote_description) {
-                console.log("connection type: " + conn_type);
-                if (conn_type == "Video") {
-                    setRemoteDescription(pc_camera);
-                } else if (conn_type == "Data") {
-                    setRemoteDescription(pc_data);
-                }
-            } else {
-                console.log("remote description is null");
-            }
-        } else {
-            console.log("description is null");
-        } */
     };
-    socket.onopen = () => {
-        register_peer(socket, username);
-        get_peers_online(socket, username);
+    client.onopen = () => {
+        signal.register(client, username);
+        signal.get_peer_list(client, username);
         socked_opened = true;
-        hide_socket_div();
-        show_rtc_div();
+        show.hide_socket_div();
+        show.show_rtc_div();
         console.log("Websocket connected");
     };
 }
 function disconnect_websocket() {
-    if (socket) {
-        socket.close();
+    if (client) {
+        client.close();
     }
 }
 function disconnect() {
@@ -132,9 +68,9 @@ function connectRobot() {
     if (socked_opened) {
         pc_data = create_data_pc();
         pc_camera = create_camera_pc();
-        hide_rtc_div();
-        show_control();
-        show_disconnect();
+        show.hide_rtc_div();
+        show.show_control();
+        show.show_disconnect();
     }
 }
 function connectRobotSolo() {
@@ -145,18 +81,18 @@ function connectRobotSolo() {
     if (socked_opened) {
         pc_data = create_data_pc();
         //pc_camera = create_camera_pc();
-        hide_rtc_div();
-        show_control();
-        show_disconnect();
+        show.hide_rtc_div();
+        show.show_control();
+        show.show_disconnect();
     }
 }
 function disconnectRobot() {
     clean_terminal();
-    hide_control();
-    hide_rtc_div();
+    show.hide_control();
+    show.hide_rtc_div();
     disconnect();
-    show_socket_div();
-    hide_disconnect();
+    show.show_socket_div();
+    show.hide_disconnect();
 }
 function session_description(data) {
     let message = data.SessionDescription.description;
@@ -180,16 +116,8 @@ function session_description(data) {
         console.log("description is null");
     }
 }
-function register_peer(socket, name) {
-    let registerMsg = { "Register": name };
-    socket.send(JSON.stringify(registerMsg));
-}
-function get_peers_online(socket, name) {
-    let getPeerListMsg = { "GetPeerList": name };
-    socket.send(JSON.stringify(getPeerListMsg));
-}
 function create_camera_pc() {
-    let pc = new RTCPeerConnection(servers_1.iceServers);
+    let pc = new RTCPeerConnection(iceServers);
     pc.addTransceiver('video', { 'direction': 'recvonly' });
     pc.oniceconnectionstatechange = (e) => {
         console.log(pc.iceConnectionState);
@@ -206,7 +134,7 @@ function create_camera_pc() {
                     "connection_type": "Video"
                 }
             };
-            socket.send(JSON.stringify(data));
+            client.send(JSON.stringify(data));
         }
     };
     pc.ontrack = function (e) {
@@ -225,7 +153,7 @@ function create_camera_pc() {
     return pc;
 }
 function create_data_pc() {
-    let pc = new RTCPeerConnection(servers_1.iceServers);
+    let pc = new RTCPeerConnection(iceServers);
     dc = create_data_channel(pc);
     pc.oniceconnectionstatechange = (e) => {
         console.log(pc.iceConnectionState);
@@ -242,7 +170,7 @@ function create_data_pc() {
                     "connection_type": "Data"
                 }
             };
-            socket.send(JSON.stringify(data));
+            client.send(JSON.stringify(data));
         }
     };
     pc.ontrack = function (e) {
@@ -288,7 +216,7 @@ function setRemoteDescription(pc) {
             pc.setRemoteDescription(remote_description);
             console.log("remote description set");
         }
-        catch (_a) {
+        catch {
             console.log("failed to set remote description");
         }
     }
@@ -331,18 +259,18 @@ function log(msg) {
 function preventContextMenu(event) {
     event.preventDefault();
 }
-function show_peer_list() {
-    let peer_list_div = document.getElementById("peer_list_div");
+/* function show_peer_list() {
+    let peer_list_div = document.getElementById("peer_list_div") as HTMLDivElement;
     if (peer_list_div) {
         peer_list_div.hidden = false;
     }
-}
-function hide_peer_list() {
-    let peer_list_div = document.getElementById("peer_list_div");
+} */
+/* function hide_peer_list() {
+    let peer_list_div = document.getElementById("peer_list_div") as HTMLDivElement;
     if (peer_list_div) {
         peer_list_div.hidden = true;
     }
-}
+} */
 function update_peer_list(peers) {
     let peerList = document.getElementById("peerList");
     if (peerList) {

@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.iceServers = void 0;
-exports.iceServers = {
+let iceServers = {
     "iceServers": [
         {
             "urls": [
@@ -27,3 +24,4 @@ exports.iceServers = {
         }
     ]
 };
+export default iceServers;
