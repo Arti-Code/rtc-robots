@@ -12,53 +12,57 @@ let socked_opened = false;
 let timer = 0.0;
 let command = "STOP";
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
-/* document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     console.log("init loader");
     const move_button = document.getElementById('moveButton');
     if (move_button) {
-        move_button.ontouchend = function(event) {
+        move_button.ontouchend = function (event) {
             move("STOP");
         };
-        move_button.ontouchstart = function(event) {
+        move_button.ontouchstart = function (event) {
             move("MOVE");
         };
-    } else {
+    }
+    else {
         console.error("Element with ID 'moveButton' not found.");
     }
     const back_button = document.getElementById('backButton');
     if (back_button) {
-        back_button.ontouchend = function(event) {
+        back_button.ontouchend = function (event) {
             move("STOP");
         };
-        back_button.ontouchstart = function(event) {
+        back_button.ontouchstart = function (event) {
             move("BACK");
         };
-    } else {
+    }
+    else {
         console.error("Element with ID 'backButton' not found.");
     }
     const right_button = document.getElementById('rightButton');
     if (right_button) {
-        right_button.ontouchend = function(event) {
+        right_button.ontouchend = function (event) {
             move("STOP");
         };
-        right_button.ontouchstart = function(event) {
+        right_button.ontouchstart = function (event) {
             move("RIGHT");
         };
-    } else {
+    }
+    else {
         console.error("Element with ID 'rightButton' not found.");
     }
     const left_button = document.getElementById('leftButton');
     if (left_button) {
-        left_button.ontouchend = function(event) {
+        left_button.ontouchend = function (event) {
             move("STOP");
         };
-        left_button.ontouchstart = function(event) {
+        left_button.ontouchstart = function (event) {
             move("LEFT");
         };
-    } else {
+    }
+    else {
         console.error("Element with ID 'leftButton' not found.");
     }
-}); */
+});
 function hide_socket_div() {
     let websocket_section = document.getElementById("websocket_section");
     if (websocket_section) {
@@ -259,7 +263,7 @@ function create_data_channel(pc) {
     };
     dc.onopen = (e) => {
         console.log('datachannel is open');
-        setInterval(autocommander, 500);
+        //setInterval(autocommander, 500);
     };
     dc.onmessage = (e) => {
         if (e.data instanceof ArrayBuffer) {

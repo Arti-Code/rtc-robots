@@ -15,7 +15,7 @@ let command: string = "STOP";
 //let move_btn = document.getElementById("moveButton") as HTMLDivElement;
 
 
-/* document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     console.log("init loader");
     const move_button = document.getElementById('moveButton');
     if (move_button) {
@@ -61,7 +61,7 @@ let command: string = "STOP";
     } else {
         console.error("Element with ID 'leftButton' not found.");
     }
-}); */
+});
    
 function hide_socket_div() {
     let websocket_section = document.getElementById("websocket_section") as HTMLDivElement;
@@ -280,7 +280,7 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
 
     dc.onopen = (e) => {
         console.log('datachannel is open');
-        setInterval(autocommander, 500);
+        //setInterval(autocommander, 500);
     }
 
     dc.onmessage = (e) => {
