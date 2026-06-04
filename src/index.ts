@@ -5,14 +5,11 @@ let pc_data: RTCPeerConnection;
 let dc: RTCDataChannel;
 let socket: WebSocket;
 let username: string = "ARTURO";
-let robot_target: string = "ROBOT";
-let camera_target: string = "CAMERA";
-let remote_description: RTCSessionDescription;
-let input_box = document.getElementById("inputBox") as HTMLDivElement;
+let robot_target: string = "TEST";
+let start_button: HTMLButtonElement;
 let socked_opened = false;
 let timer = 0.0;
-let command: string = "STOP";
-//let move_btn = document.getElementById("moveButton") as HTMLDivElement;
+let command: string = "test command";
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -124,29 +121,36 @@ function connectWebsocket() {
     let user_input = document.getElementById("userName") as HTMLInputElement;
     username = user_input.value;
     socket.onmessage = (e) => {
-        let sdp = JSON.parse(e.data);
-        let sd = sdp.SessionDescription.description;
-        let conn_type = sdp.SessionDescription.connection_type;
-        if (sd) {
-            remote_description = JSON.parse(sd);
-            if (remote_description) {
-                console.log("connection type: " + conn_type);
-                if (conn_type == "Video") {
-                    setRemoteDescription(pc_camera);
-                } else if (conn_type == "Data") {
-                    setRemoteDescription(pc_data);
+        let msg = JSON.parse(e.data);
+        if (msg.SessionDescription) {
+            let sd = msg.SessionDescription.description;
+            let conn_type = msg.SessionDescription.connection_type;
+            if (sd) {
+                let remote_description: RTCSessionDescription = JSON.parse(sd);
+                if (remote_description) {
+                    console.log("connection type: " + conn_type);
+                    if (conn_type == "Video") {
+                        setRemoteDescription(pc_camera, remote_description);
+                    } else if (conn_type == "Data") {
+                        setRemoteDescription(pc_data, remote_description);
+                    }
+                } else {
+                    console.log("remote description is null");
                 }
             } else {
-                console.log("remote description is null");
+                console.log("description is null");
             }
+        } else if (msg.PeerList) {
+            let peerList = msg.PeerList;
+            console.log("Peers online: " + peerList);
         } else {
-            console.log("description is null");
+            console.log("unknown message received: " + e.data);
         }
     }
 
     socket.onopen = () => {
         register_peer(socket, username);
-        get_peers_online(socket, username);
+        //get_peers_online(socket, username);
         socked_opened = true;
         hide_socket_div();
         show_rtc_div();
@@ -167,9 +171,25 @@ function disconnect() {
 }
 
 function connectRobot() {
+    let target_input = document.getElementById("userName") as HTMLInputElement;
+    robot_target = target_input.value;
     if (socked_opened) {
-        pc_data = create_data_pc();
-        pc_camera = create_camera_pc();
+        create_pc()
+        .then((data_pc) => {
+            pc_data = data_pc;
+            console.log("data peer connection created");
+            setTimeout(() => {
+                create_camera_pc()
+                .then((camera_pc) => {
+                    pc_camera = camera_pc;
+                    console.log("camera peer connection created");
+                }).catch(error => {
+                    console.error("Error creating camera peer connection:", error);
+                });
+            }, 3000);
+        }).catch(error => {            
+            console.error("Error creating data peer connection:", error);
+        });
         hide_rtc_div();
         show_control();
         show_disconnect();
@@ -195,7 +215,7 @@ function get_peers_online(socket: WebSocket, name: string) {
   socket.send(JSON.stringify(getPeerListMsg));
 }
 
-function create_camera_pc(): RTCPeerConnection {
+async function create_camera_pc(): Promise<RTCPeerConnection> {
     let pc = new RTCPeerConnection(iceServers);
     pc.addTransceiver('video', {'direction': 'recvonly'});
 
@@ -211,7 +231,7 @@ function create_camera_pc(): RTCPeerConnection {
                 {
                     "sender": username, 
                     "description": sdp, 
-                    "target": camera_target, 
+                    "target": robot_target, 
                     "kind": "Offer",
                     "connection_type": "Video"
                 }
@@ -237,10 +257,10 @@ function create_camera_pc(): RTCPeerConnection {
     return pc;
 }
 
-function create_data_pc(): RTCPeerConnection {
+async function create_pc(): Promise<RTCPeerConnection> {
     let pc = new RTCPeerConnection(iceServers);
     dc = create_data_channel(pc);
-
+    
     pc.oniceconnectionstatechange = (e) => {
         console.log(pc.iceConnectionState);
     };
@@ -267,11 +287,19 @@ function create_data_pc(): RTCPeerConnection {
             pc.setLocalDescription(d);
         }).catch(console.log);
     };
+
+    pc.onconnectionstatechange = (e) => {
+        console.log("connection state change: " + pc.connectionState);
+        if (pc.connectionState === "connected") {
+            console.log("peer connection established");
+        }
+    }
+
     return pc;
 }
 
 function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
-    let dc = pc.createDataChannel('dataChannel');
+    let dc = pc.createDataChannel('data');
     console.log("datachannel created");
 
     dc.onclose = (e) => {
@@ -280,10 +308,12 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
 
     dc.onopen = (e) => {
         console.log('datachannel is open');
-        //setInterval(autocommander, 500);
+        //pc.addTransceiver('video', {'direction': 'sendrecv'});
+        //setInterval(autocommander, 2000);
     }
 
     dc.onmessage = (e) => {
+        console.log("message received from datachannel");
         if (e.data instanceof ArrayBuffer) {
             let decoder = new TextDecoder();
             let s = decoder.decode(e.data);
@@ -297,15 +327,12 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
 }
 
 
-function setRemoteDescription(pc: RTCPeerConnection) {
+function setRemoteDescription(pc: RTCPeerConnection, remote_description: RTCSessionDescription) {
     if (remote_description) {
-        try {
-            pc.setRemoteDescription(remote_description);
+        console.log(remote_description);
+        pc.setRemoteDescription(remote_description).then(() => {
             console.log("remote description set");
-        }
-        catch {
-            console.log("failed to set remote description");
-        }
+        })
     } else {
         console.log("remote description is not set");
     }

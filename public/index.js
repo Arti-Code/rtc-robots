@@ -1,17 +1,23 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 let pc_camera;
 let pc_data;
 let dc;
 let socket;
 let username = "ARTURO";
-let robot_target = "ROBOT";
-let camera_target = "CAMERA";
-let remote_description;
-let input_box = document.getElementById("inputBox");
+let robot_target = "TEST";
+let start_button;
 let socked_opened = false;
 let timer = 0.0;
-let command = "STOP";
-//let move_btn = document.getElementById("moveButton") as HTMLDivElement;
+let command = "test command";
 document.addEventListener('DOMContentLoaded', () => {
     console.log("init loader");
     const move_button = document.getElementById('moveButton');
@@ -117,31 +123,40 @@ function connectWebsocket() {
     let user_input = document.getElementById("userName");
     username = user_input.value;
     socket.onmessage = (e) => {
-        let sdp = JSON.parse(e.data);
-        let sd = sdp.SessionDescription.description;
-        let conn_type = sdp.SessionDescription.connection_type;
-        if (sd) {
-            remote_description = JSON.parse(sd);
-            if (remote_description) {
-                console.log("connection type: " + conn_type);
-                if (conn_type == "Video") {
-                    setRemoteDescription(pc_camera);
+        let msg = JSON.parse(e.data);
+        if (msg.SessionDescription) {
+            let sd = msg.SessionDescription.description;
+            let conn_type = msg.SessionDescription.connection_type;
+            if (sd) {
+                let remote_description = JSON.parse(sd);
+                if (remote_description) {
+                    console.log("connection type: " + conn_type);
+                    if (conn_type == "Video") {
+                        setRemoteDescription(pc_camera, remote_description);
+                    }
+                    else if (conn_type == "Data") {
+                        setRemoteDescription(pc_data, remote_description);
+                    }
                 }
-                else if (conn_type == "Data") {
-                    setRemoteDescription(pc_data);
+                else {
+                    console.log("remote description is null");
                 }
             }
             else {
-                console.log("remote description is null");
+                console.log("description is null");
             }
         }
+        else if (msg.PeerList) {
+            let peerList = msg.PeerList;
+            console.log("Peers online: " + peerList);
+        }
         else {
-            console.log("description is null");
+            console.log("unknown message received: " + e.data);
         }
     };
     socket.onopen = () => {
         register_peer(socket, username);
-        get_peers_online(socket, username);
+        //get_peers_online(socket, username);
         socked_opened = true;
         hide_socket_div();
         show_rtc_div();
@@ -167,9 +182,25 @@ function disconnect() {
     console.log("disconnected");
 }
 function connectRobot() {
+    let target_input = document.getElementById("userName");
+    robot_target = target_input.value;
     if (socked_opened) {
-        pc_data = create_data_pc();
-        pc_camera = create_camera_pc();
+        create_pc()
+            .then((data_pc) => {
+            pc_data = data_pc;
+            console.log("data peer connection created");
+            setTimeout(() => {
+                create_camera_pc()
+                    .then((camera_pc) => {
+                    pc_camera = camera_pc;
+                    console.log("camera peer connection created");
+                }).catch(error => {
+                    console.error("Error creating camera peer connection:", error);
+                });
+            }, 3000);
+        }).catch(error => {
+            console.error("Error creating data peer connection:", error);
+        });
         hide_rtc_div();
         show_control();
         show_disconnect();
@@ -192,80 +223,92 @@ function get_peers_online(socket, name) {
     socket.send(JSON.stringify(getPeerListMsg));
 }
 function create_camera_pc() {
-    let pc = new RTCPeerConnection(iceServers);
-    pc.addTransceiver('video', { 'direction': 'recvonly' });
-    pc.oniceconnectionstatechange = (e) => {
-        console.log(pc.iceConnectionState);
-    };
-    pc.onicecandidate = (e) => {
-        if (e.candidate === null) {
-            let sdp = JSON.stringify(pc.localDescription);
-            let data = {
-                "SessionDescription": {
-                    "sender": username,
-                    "description": sdp,
-                    "target": camera_target,
-                    "kind": "Offer",
-                    "connection_type": "Video"
-                }
-            };
-            socket.send(JSON.stringify(data));
-        }
-    };
-    pc.ontrack = function (e) {
-        e.currentTarget;
-        console.log("track received");
-        let el = document.getElementById("myVideo");
-        el.srcObject = e.streams[0];
-        el.autoplay = true;
-        el.controls = true;
-    };
-    pc.onnegotiationneeded = (e) => {
-        pc.createOffer().then((d) => {
-            pc.setLocalDescription(d);
-        }).catch(console.log);
-    };
-    return pc;
+    return __awaiter(this, void 0, void 0, function* () {
+        let pc = new RTCPeerConnection(iceServers);
+        pc.addTransceiver('video', { 'direction': 'recvonly' });
+        pc.oniceconnectionstatechange = (e) => {
+            console.log(pc.iceConnectionState);
+        };
+        pc.onicecandidate = (e) => {
+            if (e.candidate === null) {
+                let sdp = JSON.stringify(pc.localDescription);
+                let data = {
+                    "SessionDescription": {
+                        "sender": username,
+                        "description": sdp,
+                        "target": robot_target,
+                        "kind": "Offer",
+                        "connection_type": "Video"
+                    }
+                };
+                socket.send(JSON.stringify(data));
+            }
+        };
+        pc.ontrack = function (e) {
+            e.currentTarget;
+            console.log("track received");
+            let el = document.getElementById("myVideo");
+            el.srcObject = e.streams[0];
+            el.autoplay = true;
+            el.controls = true;
+        };
+        pc.onnegotiationneeded = (e) => {
+            pc.createOffer().then((d) => {
+                pc.setLocalDescription(d);
+            }).catch(console.log);
+        };
+        return pc;
+    });
 }
-function create_data_pc() {
-    let pc = new RTCPeerConnection(iceServers);
-    dc = create_data_channel(pc);
-    pc.oniceconnectionstatechange = (e) => {
-        console.log(pc.iceConnectionState);
-    };
-    pc.onicecandidate = (e) => {
-        if (e.candidate === null) {
-            let sdp = JSON.stringify(pc.localDescription);
-            let data = {
-                "SessionDescription": {
-                    "sender": username,
-                    "description": sdp,
-                    "target": robot_target,
-                    "kind": "Offer",
-                    "connection_type": "Data"
-                }
-            };
-            socket.send(JSON.stringify(data));
-        }
-    };
-    pc.onnegotiationneeded = (e) => {
-        pc.createOffer().then((d) => {
-            pc.setLocalDescription(d);
-        }).catch(console.log);
-    };
-    return pc;
+function create_pc() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pc = new RTCPeerConnection(iceServers);
+        dc = create_data_channel(pc);
+        pc.oniceconnectionstatechange = (e) => {
+            console.log(pc.iceConnectionState);
+        };
+        pc.onicecandidate = (e) => {
+            if (e.candidate === null) {
+                let sdp = JSON.stringify(pc.localDescription);
+                let data = {
+                    "SessionDescription": {
+                        "sender": username,
+                        "description": sdp,
+                        "target": robot_target,
+                        "kind": "Offer",
+                        "connection_type": "Data"
+                    }
+                };
+                socket.send(JSON.stringify(data));
+            }
+        };
+        pc.onnegotiationneeded = (e) => {
+            pc.createOffer().then((d) => {
+                pc.setLocalDescription(d);
+            }).catch(console.log);
+        };
+        pc.onconnectionstatechange = (e) => {
+            console.log("connection state change: " + pc.connectionState);
+            if (pc.connectionState === "connected") {
+                console.log("peer connection established");
+            }
+        };
+        return pc;
+    });
 }
 function create_data_channel(pc) {
-    let dc = pc.createDataChannel('dataChannel');
+    let dc = pc.createDataChannel('data');
     console.log("datachannel created");
     dc.onclose = (e) => {
         console.log('datachannel closed');
     };
     dc.onopen = (e) => {
         console.log('datachannel is open');
-        //setInterval(autocommander, 500);
+        //pc.addTransceiver('video', {'direction': 'sendrecv'});
+        //setInterval(autocommander, 2000);
     };
     dc.onmessage = (e) => {
+        console.log("message received from datachannel");
         if (e.data instanceof ArrayBuffer) {
             let decoder = new TextDecoder();
             let s = decoder.decode(e.data);
@@ -277,15 +320,12 @@ function create_data_channel(pc) {
     };
     return dc;
 }
-function setRemoteDescription(pc) {
+function setRemoteDescription(pc, remote_description) {
     if (remote_description) {
-        try {
-            pc.setRemoteDescription(remote_description);
+        console.log(remote_description);
+        pc.setRemoteDescription(remote_description).then(() => {
             console.log("remote description set");
-        }
-        catch (_a) {
-            console.log("failed to set remote description");
-        }
+        });
     }
     else {
         console.log("remote description is not set");
