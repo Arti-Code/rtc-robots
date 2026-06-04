@@ -171,7 +171,7 @@ function disconnect() {
 }
 
 function connectRobot() {
-    let target_input = document.getElementById("userName") as HTMLInputElement;
+    let target_input = document.getElementById("robotTarget") as HTMLInputElement;
     robot_target = target_input.value;
     if (socked_opened) {
         create_pc()
@@ -317,9 +317,9 @@ function create_data_channel(pc: RTCPeerConnection): RTCDataChannel {
         if (e.data instanceof ArrayBuffer) {
             let decoder = new TextDecoder();
             let s = decoder.decode(e.data);
-            log("==> " + s);
+            log("[→] " + s);
         } else {
-            log("==> " + e.data.toString());
+            log("[→] " + e.data.toString());
         }
     }
 
@@ -365,8 +365,8 @@ function log(msg: string) {
     } else {
         console.log("log area is not found");
     }
-    if (node_num >= 6) {
-        for (let i = 6; i < node_num; i++) {
+    if (node_num >= 3) {
+        for (let i = 3; i < node_num; i++) {
             logArea.children[i].remove();
         }
     }
