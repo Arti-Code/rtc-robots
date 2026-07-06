@@ -246,7 +246,7 @@ async function create_camera_pc(): Promise<RTCPeerConnection> {
         let el = document.getElementById("myVideo") as HTMLVideoElement;
         el.srcObject = e.streams[0];
         el.autoplay = true;
-        el.controls = true;
+        el.controls = false;
     }
 
     pc.onnegotiationneeded = (e) => {

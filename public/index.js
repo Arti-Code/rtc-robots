@@ -250,7 +250,7 @@ function create_camera_pc() {
             let el = document.getElementById("myVideo");
             el.srcObject = e.streams[0];
             el.autoplay = true;
-            el.controls = true;
+            el.controls = false;
         };
         pc.onnegotiationneeded = (e) => {
             pc.createOffer().then((d) => {
